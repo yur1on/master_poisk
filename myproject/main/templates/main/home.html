@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <h1>Добро пожаловать на сайт!</h1>
+        {% if user.is_authenticated %}
+            <p>Здравствуйте, {{ user.username }}!</p>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-primary">Перейти в профиль</a>
+        {% else %}
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <a href="{% url 'accounts:login' %}" class="btn btn-primary">Войти</a>
+                <a href="{% url 'accounts:select_user_type' %}" class="btn btn-primary">Регистрация</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Выбор регистрации{% endblock %}
+{% block content %}
+<h2>Кем вы хотите зарегистрироваться?</h2>
+
+<div style="display: flex; gap: 20px;">
+    <a href="{% url 'accounts:register_workshop' %}">
+        <button style="padding: 10px 20px;">🔧 Мастерская</button>
+    </a>
+    <a href="{% url 'accounts:register_client' %}">
+        <button style="padding: 10px 20px;">👤 Клиент</button>
+    </a>
+</div>
+{% endblock %}
