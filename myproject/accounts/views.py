@@ -54,17 +54,19 @@ def register_client(request):
         form = ClientRegisterForm()
     return render(request, 'accounts/register_client.html', {'form': form})
 
+# views.py
 def register_workshop(request):
     if request.method == 'POST':
         form = WorkshopRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            WorkshopProfile.objects.create(
+            profile = WorkshopProfile.objects.create(
                 user=user,
                 workshop_name=form.cleaned_data['workshop_name'],
                 workshop_address=form.cleaned_data['workshop_address'],
                 phone=form.cleaned_data['phone'],
             )
+            profile.activity_area.set(form.cleaned_data['activity_area'])
             login(request, user)
             return redirect('main:home')
     else:
@@ -116,6 +118,7 @@ def edit_profile(request):
         else:
             form = ClientProfileForm(instance=client_profile, initial={'email': user.email})
         return render(request, 'accounts/edit_client_profile.html', {'form': form})
+
     except ClientProfile.DoesNotExist:
         pass
 
@@ -124,15 +127,20 @@ def edit_profile(request):
         if request.method == 'POST':
             form = WorkshopProfileForm(request.POST, instance=workshop_profile)
             if form.is_valid():
-                workshop_profile = form.save()
+                workshop_profile = form.save(commit=False)
                 user.email = form.cleaned_data['email']
                 user.save()
+                workshop_profile.save()
+                form.save_m2m()  # сохраняем activity_area связи
                 return redirect('accounts:profile')
         else:
-            form = WorkshopProfileForm(instance=workshop_profile, initial={'email': user.email})
+            form = WorkshopProfileForm(
+                instance=workshop_profile,
+                initial={'email': user.email}
+            )
         return render(request, 'accounts/edit_workshop_profile.html', {'form': form})
+
     except WorkshopProfile.DoesNotExist:
         pass
 
-    # если ни клиент ни мастер — редирект
     return redirect('main:home')

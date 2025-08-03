@@ -1,19 +1,43 @@
 {% extends 'base.html' %}
+
 {% block title %}Личный кабинет{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2>Личный кабинет</h2>
-        <p><strong>Логин:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        {% if is_client %}
-            <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
-        {% elif is_workshop %}
-            <p><strong>Название мастерской:</strong> {{ workshop_profile.workshop_name }}</p>
-            <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
-            <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
-        {% endif %}
-        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">Редактировать профиль</a>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Личный кабинет</h4>
+                </div>
+                <div class="card-body">
+
+                    {% if is_workshop %}
+                        <p><strong>Сфера деятельности:</strong>
+                            {% if workshop_profile.activity_area.all %}
+                                {{ workshop_profile.activity_area.all|join:", " }}
+                            {% else %}
+                                Не указано
+                            {% endif %}
+                        </p>
+                    {% endif %}
+
+                    <p><strong>Логин:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+
+                    {% if is_client %}
+                        <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
+                    {% elif is_workshop %}
+                        <p><strong>Название мастерской:</strong> {{ workshop_profile.workshop_name }}</p>
+                        <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
+                        <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
+                    {% endif %}
+
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary mt-3">Редактировать профиль</a>
+
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
