@@ -1,10 +1,114 @@
 {% extends 'base.html' %}
 {% block title %}Регистрация мастерской{% endblock %}
 {% block content %}
-<h2>Регистрация мастерской</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Зарегистрироваться</button>
-</form>
+{% load crispy_forms_tags %}
+<style>
+  .beauty-form {
+    background: linear-gradient(135deg, #e6f0fa);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  .card {
+    transition: transform 0.2s;
+    border: none;
+    background: #fff;
+  }
+  .card:hover {
+    transform: scale(1.02);
+  }
+
+  .btn-primary {
+    background: #d63384;
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+  }
+  .btn-primary:hover {
+    background: #c81e6f;
+    transform: scale(1.05);
+  }
+  h2 {
+    color: #333;
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+  }
+</style>
+
+<div class="row justify-content-center mt-5">
+  <div class="col-md-8 beauty-form">
+    <h2 class="text-center mb-4">Регистрация бьюти-профессионала</h2>
+    <form method="post">
+      {% csrf_token %}
+
+      <!-- Секция: Детали мастерской -->
+      <fieldset class="mb-4">
+        {{ form.workshop_name|as_crispy_field }}
+        {{ form.workshop_address|as_crispy_field }}
+        {{ form.phone|as_crispy_field }}
+      </fieldset>
+
+      <!-- Секция: Сферы деятельности -->
+      <fieldset class="mb-4">
+        <legend>Сферы деятельности</legend>
+        <div class="row">
+          {% for category, areas in form.grouped_activity.items %}
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-header">
+                  <div class="form-check">
+                    <input type="checkbox" id="select_all_{{ category }}" class="select-all" data-category="{{ category }}">
+                    <label for="select_all_{{ category }}">{{ category }} <small>(выбрать все)</small></label>
+                  </div>
+                </div>
+                <div class="card-body">
+                  {% for area in areas %}
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        name="activity_area"
+                        value="{{ area.pk }}"
+                        id="area_{{ area.pk }}"
+                        class="form-check-input activity-area"
+                        data-category="{{ category }}"
+                        {% if area in form.initial.activity_area %}checked{% endif %}
+                      />
+                      <label for="area_{{ area.pk }}" class="form-check-label">
+                        {{ area.name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <!-- Секция: Детали аккаунта -->
+      <fieldset class="mb-4">
+        {{ form.username|as_crispy_field }}
+        {{ form.email|as_crispy_field }}
+        {{ form.password1|as_crispy_field }}
+        {{ form.password2|as_crispy_field }}
+      </fieldset>
+
+      <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript для "Выбрать все" -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.select-all').forEach(function(selectAll) {
+    selectAll.addEventListener('change', function() {
+      var category = this.dataset.category;
+      var checkboxes = document.querySelectorAll('.activity-area[data-category="' + category + '"]');
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAll.checked;
+      });
+    });
+  });
+});
+</script>
 {% endblock %}

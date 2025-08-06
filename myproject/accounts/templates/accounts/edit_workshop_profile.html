@@ -1,77 +1,165 @@
 {% extends 'base.html' %}
-
-{% block title %}Редактирование мастерской{% endblock %}
-
+{% block title %}Редактировать профиль бьюти-студии{% endblock %}
 {% block content %}
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Редактирование профиля мастерской</h4>
-        </div>
-        <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
+{% load crispy_forms_tags %}
 
-            {# ------------------ Email пользователя ------------------ #}
-            <div class="mb-3">
-              <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-              {{ form.email }}
-              {% if form.email.errors %}
-                <div class="text-danger small">{{ form.email.errors }}</div>
-              {% endif %}
-            </div>
+<style>
+  .beauty-form {
+    background: linear-gradient(135deg, #ffffff, #fff3e0); /* Белый к золотистому */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    background: #fff;
+    border-radius: 8px;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .card-header {
+    background: #2e7d32; /* Тёмно-зелёный */
+    color: #fff;
+    font-weight: 500;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 15px;
+  }
+  .btn-primary {
+    background: #00897b; /* Изумрудный */
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .btn-primary:hover {
+    background: #00695c;
+    transform: scale(1.03);
+  }
+  h2 {
+    color: #212121;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    margin-bottom: 25px;
+  }
+  legend {
+    color: #212121;
+    font-weight: 500;
+    font-size: 1.2rem;
+  }
+  .custom-control-label {
+    color: #424242;
+  }
+  /* Кастомные квадратные чекбоксы */
+  .custom-checkbox .custom-control-input {
+    display: none;
+  }
+  .custom-checkbox .custom-control-label::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #00897b; /* Изумрудная рамка */
+    border-radius: 4px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background-color: #fff;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .custom-checkbox .custom-control-input:checked + .custom-control-label::before {
+    background-color: #00897b; /* Изумрудный фон при выборе */
+    border-color: #00897b;
+  }
+  .custom-checkbox .custom-control-input:checked + .custom-control-label::after {
+    content: '\2713'; /* Символ галочки */
+    display: inline-block;
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .custom-checkbox .custom-control-label:hover::before {
+    border-color: #00695c;
+  }
+</style>
 
-            {# ------------- Название мастерской ------------- #}
-            <div class="mb-3">
-              <label for="{{ form.workshop_name.id_for_label }}" class="form-label">Название мастерской</label>
-              {{ form.workshop_name }}
-              {% if form.workshop_name.errors %}
-                <div class="text-danger small">{{ form.workshop_name.errors }}</div>
-              {% endif %}
-            </div>
+<div class="row justify-content-center mt-5">
+  <div class="col-md-8 beauty-form">
+    <h2 class="text-center mb-4">Редактировать профиль бьюти-студии</h2>
+    <form method="post">
+      {% csrf_token %}
 
-            {# -------------- Адрес мастерской ------------- #}
-            <div class="mb-3">
-              <label for="{{ form.workshop_address.id_for_label }}" class="form-label">Адрес мастерской</label>
-              {{ form.workshop_address }}
-              {% if form.workshop_address.errors %}
-                <div class="text-danger small">{{ form.workshop_address.errors }}</div>
-              {% endif %}
-            </div>
+      <!-- Секция: Детали профиля -->
+      <fieldset class="mb-4">
+        <legend>Детали профиля</legend>
+        {{ form.workshop_name|as_crispy_field }}
+        {{ form.workshop_address|as_crispy_field }}
+        {{ form.phone|as_crispy_field }}
+        {{ form.city|as_crispy_field }}
+        {{ form.email|as_crispy_field }}
+      </fieldset>
 
-            {# ---------------- Телефон ---------------- #}
-            <div class="mb-3">
-              <label for="{{ form.phone.id_for_label }}" class="form-label">Телефон</label>
-              {{ form.phone }}
-              {% if form.phone.errors %}
-                <div class="text-danger small">{{ form.phone.errors }}</div>
-              {% endif %}
-            </div>
-
-            {# --------- Сферы деятельности (множ. выбор) --------- #}
-            <fieldset class="mb-3">
-              <legend class="col-form-label pt-0">Сферы деятельности</legend>
-              {% for checkbox in form.activity_area %}
-                <div class="form-check">
-                  {{ checkbox.tag }}
-                  <label class="form-check-label" for="{{ checkbox.id_for_label }}">
-                    {{ checkbox.choice_label }}
-                  </label>
+      <!-- Секция: Сферы деятельности -->
+      <fieldset class="mb-4">
+        <legend>Сферы деятельности</legend>
+        <div class="row">
+          {% for category, areas in form.grouped_activity.items %}
+            <div class="col-md-4 mb-3">
+              <div class="card shadow-sm">
+                <div class="card-header">
+                  <div class="custom-control custom-checkbox">
+                    <input type="checkbox" id="select_all_{{ category|slugify }}" class="select-all custom-control-input" data-category="{{ category|slugify }}">
+                    <label for="select_all_{{ category|slugify }}" class="custom-control-label">{{ category }} <small>(выбрать все)</small></label>
+                  </div>
                 </div>
-              {% endfor %}
-              {% if form.activity_area.errors %}
-                <div class="text-danger small">{{ form.activity_area.errors }}</div>
-              {% endif %}
-            </fieldset>
-
-            <button type="submit" class="btn btn-success">Сохранить изменения</button>
-            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary ms-2">Отмена</a>
-          </form>
+                <div class="card-body">
+                  {% for area in areas %}
+                    <div class="custom-control custom-checkbox">
+                      <input
+                        type="checkbox"
+                        name="activity_area"
+                        value="{{ area.pk }}"
+                        id="area_{{ area.pk }}"
+                        class="custom-control-input activity-area"
+                        data-category="{{ category|slugify }}"
+                        {% if area.pk in form.activity_area.value %}checked{% endif %}
+                      />
+                      <label for="area_{{ area.pk }}" class="custom-control-label">
+                        {{ area.name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
-      </div>
-    </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-primary btn-lg w-100">Сохранить</button>
+    </form>
   </div>
 </div>
+
+<!-- JavaScript для "Выбрать все" -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.select-all').forEach(function(selectAll) {
+    selectAll.addEventListener('change', function() {
+      var category = this.dataset.category;
+      var checkboxes = document.querySelectorAll('.activity-area[data-category="' + category + '"]');
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAll.checked;
+      });
+    });
+  });
+});
+</script>
+
+<!-- Подключение шрифта Roboto -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 {% endblock %}

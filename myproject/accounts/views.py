@@ -1,7 +1,11 @@
-# accounts/views.py
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import ClientRegisterForm, WorkshopRegisterForm, ClientProfileForm, WorkshopProfileForm
+from .models import ClientProfile, WorkshopProfile
+from collections import OrderedDict
+from django.db import IntegrityError
 
 def register_view(request):
     if request.method == 'POST':
@@ -28,79 +32,85 @@ def logout_view(request):
     logout(request)
     return redirect('main:home')
 
-from django.shortcuts import render, redirect
-
 def select_user_type(request):
     return render(request, 'accounts/select_user_type.html')
-
-
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
-
-from .forms import ClientRegisterForm, WorkshopRegisterForm
-from .models import ClientProfile, WorkshopProfile
-from django.contrib.auth import login
 
 def register_client(request):
     if request.method == 'POST':
         form = ClientRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            phone = form.cleaned_data['phone']
-            ClientProfile.objects.create(user=user, phone=phone)
-            login(request, user)
-            return redirect('main:home')
+            try:
+                user = form.save()
+                # Проверяем, существует ли профиль клиента
+                if not ClientProfile.objects.filter(user=user).exists():
+                    ClientProfile.objects.create(
+                        user=user,
+                        name=form.cleaned_data['name'],
+                        phone=form.cleaned_data['phone'],
+                        city=form.cleaned_data['city']
+                    )
+                login(request, user)
+                return redirect('main:home')
+            except IntegrityError:
+                form.add_error(None, "Пользователь с таким именем уже существует.")
     else:
         form = ClientRegisterForm()
     return render(request, 'accounts/register_client.html', {'form': form})
 
-# views.py
 def register_workshop(request):
     if request.method == 'POST':
         form = WorkshopRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            profile = WorkshopProfile.objects.create(
-                user=user,
-                workshop_name=form.cleaned_data['workshop_name'],
-                workshop_address=form.cleaned_data['workshop_address'],
-                phone=form.cleaned_data['phone'],
-            )
-            profile.activity_area.set(form.cleaned_data['activity_area'])
             login(request, user)
             return redirect('main:home')
     else:
         form = WorkshopRegisterForm()
     return render(request, 'accounts/register_workshop.html', {'form': form})
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-
 @login_required
 def profile_view(request):
     try:
         client_profile = request.user.clientprofile
         is_client = True
-    except:
+    except ClientProfile.DoesNotExist:
         client_profile = None
         is_client = False
 
     try:
         workshop_profile = request.user.workshopprofile
         is_workshop = True
-    except:
+        CATEGORY_TRANSLATIONS = {
+            'hair': 'Уход за волосами',
+            'nails': 'Ногтевой сервис',
+            'cosmetology': 'Косметология',
+            'makeup': 'Макияж',
+            'brows_lashes': 'Уход за бровями и ресницами',
+            'epilation': 'Эпиляция и депиляция',
+            'body': 'Массаж и уход за телом',
+            'tattoo_piercing': 'Тату и пирсинг',
+            'styling': 'Стилистика и имидж',
+            'kids': 'Детская бьюти-сфера',
+            'alternative': 'Альтернативные направления',
+            'education': 'Обучение и менторство'
+        }
+        grouped_activities = OrderedDict()
+        for activity in workshop_profile.activity_area.all():
+            cat = CATEGORY_TRANSLATIONS.get(activity.category, activity.get_category_display())
+            grouped_activities.setdefault(cat, []).append(activity)
+    except WorkshopProfile.DoesNotExist:
         workshop_profile = None
         is_workshop = False
+        grouped_activities = {}
 
     return render(request, 'accounts/profile.html', {
         'client_profile': client_profile,
         'workshop_profile': workshop_profile,
         'is_client': is_client,
         'is_workshop': is_workshop,
+        'grouped_activities': grouped_activities,
+        'user': request.user
     })
-
-from .forms import ClientProfileForm, WorkshopProfileForm
-from django.contrib.auth.models import User
 
 @login_required
 def edit_profile(request):
@@ -131,7 +141,7 @@ def edit_profile(request):
                 user.email = form.cleaned_data['email']
                 user.save()
                 workshop_profile.save()
-                form.save_m2m()  # сохраняем activity_area связи
+                form.save_m2m()
                 return redirect('accounts:profile')
         else:
             form = WorkshopProfileForm(

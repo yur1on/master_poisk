@@ -1,14 +1,66 @@
 {% extends 'base.html' %}
 {% block title %}Выбор регистрации{% endblock %}
 {% block content %}
-<h2>Кем вы хотите зарегистрироваться?</h2>
+<style>
+  /* Стили для бьюти-эстетики */
+  .beauty-choice-container {
+    background: linear-gradient(135deg, #f8e9f1, #e6f0fa);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    margin: 50px auto;
+  }
+  .beauty-choice-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: transform 0.2s, background-color 0.2s;
+    color: #fff;
+    text-decoration: none;
+    margin: 10px;
+  }
+  .beauty-choice-btn:hover {
+    transform: scale(1.05);
+    text-decoration: none;
+    color: #fff;
+  }
+  .professional-btn {
+    background: #d63384; /* Розовый для бьюти */
+  }
+  .professional-btn:hover {
+    background: #c81e6f;
+  }
+  .client-btn {
+    background: #6f42c1; /* Фиолетовый для клиентов */
+  }
+  .client-btn:hover {
+    background: #5a32a3;
+  }
+  h2 {
+    color: #333;
+    font-family: 'Arial', sans-serif;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+</style>
 
-<div style="display: flex; gap: 20px;">
-    <a href="{% url 'accounts:register_workshop' %}">
-        <button style="padding: 10px 20px;">🔧 Мастерская</button>
+<div class="beauty-choice-container">
+  <h2>Кем вы хотите зарегистрироваться?</h2>
+  <div style="display: flex; justify-content: center; gap: 20px;">
+    <a href="{% url 'accounts:register_workshop' %}" class="beauty-choice-btn professional-btn">
+      <i class="fas fa-paint-brush"></i>&nbsp;Бьюти-профессионал
     </a>
-    <a href="{% url 'accounts:register_client' %}">
-        <button style="padding: 10px 20px;">👤 Клиент</button>
+    <a href="{% url 'accounts:register_client' %}" class="beauty-choice-btn client-btn">
+      <i class="fas fa-user"></i>&nbsp;Клиент
     </a>
+  </div>
 </div>
+
+<!-- Подключение FontAwesome для иконок -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock %}

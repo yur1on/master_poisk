@@ -1,43 +1,126 @@
-{% extends 'base.html' %}
-
-{% block title %}Личный кабинет{% endblock %}
+{% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Личный кабинет</h4>
-                </div>
-                <div class="card-body">
+<style>
+  .profile-container {
+    background: linear-gradient(135deg, #ffffff, #fff3e0); /* Белый к золотистому */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    max-width: 800px;
+    margin: 50px auto;
+  }
+  .card {
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .card-header {
+    background: #2e7d32; /* Тёмно-зелёный */
+    color: #fff;
+    font-weight: 500;
+    border-radius: 8px 8px 0 0;
+    padding: 15px;
+  }
+  .btn-primary {
+    background: #00897b; /* Изумрудный */
+    border: none;
+    transition: transform 0.2s, background-color 0.2s;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .btn-primary:hover {
+    background: #00695c;
+    transform: scale(1.03);
+  }
+  h2, h4, h5 {
+    color: #212121;
+    font-family: 'Roboto', sans-serif;
+  }
+  h2 {
+    font-weight: 700;
+    margin-bottom: 25px;
+  }
+  h4 {
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+  h5 {
+    font-weight: 500;
+    margin-top: 15px;
+  }
+  p, li {
+    color: #424242;
+    font-size: 1rem;
+  }
+  .activity-list {
+    list-style: none;
+    padding: 0;
+  }
+  .activity-list li::before {
+    content: "\f00c"; /* FontAwesome check icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: #00897b;
+    margin-right: 8px;
+  }
+</style>
 
-                    {% if is_workshop %}
-                        <p><strong>Сфера деятельности:</strong>
-                            {% if workshop_profile.activity_area.all %}
-                                {{ workshop_profile.activity_area.all|join:", " }}
-                            {% else %}
-                                Не указано
-                            {% endif %}
-                        </p>
-                    {% endif %}
+<div class="profile-container">
+  <h2 class="text-center mb-4">Личный кабинет</h2>
 
-                    <p><strong>Логин:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-
-                    {% if is_client %}
-                        <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
-                    {% elif is_workshop %}
-                        <p><strong>Название мастерской:</strong> {{ workshop_profile.workshop_name }}</p>
-                        <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
-                        <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
-                    {% endif %}
-
-                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary mt-3">Редактировать профиль</a>
-
-                </div>
-            </div>
-        </div>
+  {% if is_client %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Профиль клиента</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>Имя:</strong> {{ client_profile.name|default:user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
+        <p><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
+      </div>
     </div>
+  {% elif is_workshop %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Профиль бьюти-студии</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
+        <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
+        <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
+        <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Сферы деятельности:</strong></p>
+        {% if grouped_activities %}
+          {% for category, activities in grouped_activities.items %}
+            <h5>{{ category }}</h5>
+            <ul class="activity-list">
+              {% for activity in activities %}
+                <li>{{ activity.name }}</li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        {% else %}
+          <p>Не указано</p>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <p class="text-center">Профиль не найден.</p>
+  {% endif %}
+
+  <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100">Редактировать профиль</a>
 </div>
+
+<!-- Подключение шрифта Roboto и FontAwesome -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
