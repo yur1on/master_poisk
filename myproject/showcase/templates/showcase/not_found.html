@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Витрина не найдена{% endblock %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>Витрина для пользователя {{ username }} не найдена или не создана.</h2>
+    {% if request.user.username == username %}
+        <p>Вы можете создать её, перейдя по ссылке в шапке.</p>
+    {% endif %}
+</div>
+{% endblock %}

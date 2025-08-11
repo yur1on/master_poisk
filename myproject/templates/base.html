@@ -13,39 +13,42 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'main:home' %}">Главная</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        {% if user.is_authenticated %}
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'main:home' %}">Главная</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        {% if is_workshop %}
                             <li class="nav-item">
-                                <span class="nav-link">{{ user.username }}</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'accounts:profile' %}">Профиль</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'accounts:logout' %}">Выйти</a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'accounts:login' %}">Вход</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'accounts:select_user_type' %}">Регистрация</a>
+                                <a class="nav-link" href="{% url 'showcase:view_showcase' username=user.username %}">Витрина</a>
                             </li>
                         {% endif %}
-                    </ul>
-                </div>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:profile' %}">Профиль</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:logout' %}">Выйти</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:login' %}">Вход</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'accounts:select_user_type' %}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
+</header>
 
     <main class="container mt-4">
         {% block content %}{% endblock %}

@@ -146,3 +146,10 @@ class WorkshopProfileForm(forms.ModelForm):
             cat = CATEGORY_TRANSLATIONS.get(area.category, area.get_category_display())
             grouped.setdefault(cat, []).append(area)
         self.grouped_activity = grouped
+
+    description = forms.CharField(widget=forms.Textarea, required=False, label='Описание')
+    working_hours = forms.CharField(max_length=255, required=False, label='Время работы')
+
+    class Meta:
+        model = WorkshopProfile
+        fields = ['workshop_name', 'workshop_address', 'phone', 'city', 'activity_area', 'description', 'working_hours']

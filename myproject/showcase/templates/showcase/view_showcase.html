@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Витрина {{ workshop.workshop_name }}{% endblock %}
+{% block content %}
+<style>
+  .highlight-phone {
+    background-color: #ffeb3b; /* Ярко-желтый фон */
+    color: #d32f2f; /* Красный текст */
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  .map-container {
+    height: 400px; /* Высота карты */
+  }
+</style>
+
+<div class="container mt-5">
+  <!-- Название компании -->
+  <h1 class="text-center mb-4">{{ workshop.workshop_name }}</h1>
+
+  <!-- Баннер на ширину страницы -->
+  {% if showcase.cover_photo %}
+    <img src="{{ showcase.cover_photo.url }}" alt="Баннер" class="img-fluid w-100 mb-4" style="max-height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+  {% else %}
+    <div class="alert alert-info text-center">Баннер не загружен.</div>
+  {% endif %}
+
+  <!-- Основной контент: 2/3 слева, 1/3 справа -->
+  <div class="row">
+    <!-- Левая колонка: 2/3 (описание, телефоны, время работы, галерея) -->
+    <div class="col-md-8">
+      <div class="card shadow mb-4">
+        <div class="card-body">
+          <h4>Описание</h4>
+          <p>{{ workshop.description|default:"Описание не указано." }}</p>
+
+          <h4>Контакты</h4>
+          <p><strong>Телефон:</strong> {{ workshop.phone }}</p>
+          <p><strong>Время работы:</strong> {{ workshop.working_hours|default:"Не указано." }}</p>
+
+{% if is_owner %}
+  <h5 class="mt-4">Добавить новое фото в галерею</h5>
+  <form method="post" enctype="multipart/form-data" class="mb-4">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-6">
+        {{ upload_form.image.label_tag }}
+        {{ upload_form.image }}
+      </div>
+      <div class="col-md-6">
+        {{ upload_form.description.label_tag }}
+        {{ upload_form.description }}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Загрузить</button>
+  </form>
+{% endif %}
+
+            {% if gallery %}
+              <div class="row">
+                {% for image in gallery %}
+                  <div class="col-md-4 mb-3">
+                    <img src="{{ image.image.url }}" alt="{{ image.description }}" class="img-thumbnail">
+                    <p>{{ image.description|default:"Без описания" }}</p>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p>Галерея пуста.</p>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Правая колонка: 1/3 (Google карта и выделенный телефон) -->
+    <div class="col-md-4">
+      <div class="card shadow mb-4">
+        <div class="card-body text-center">
+          <h4>Адрес на карте</h4>
+          <p><strong>Адрес:</strong> {{ workshop.workshop_address }}</p>
+          <!-- Google Maps Embed (замените YOUR_API_KEY на реальный ключ Google Maps API) -->
+          <iframe
+            class="map-container w-100 mb-3"
+            src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q={{ workshop.workshop_address|urlencode }},{{ workshop.city|urlencode }}"
+            frameborder="0"
+            allowfullscreen
+            aria-hidden="false"
+            tabindex="0"
+            style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+          </iframe>
+          <!-- Ярко выделенный номер телефона -->
+          <div class="highlight-phone">
+            Связаться: {{ workshop.phone }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if is_owner %}
+    <a href="{% url 'showcase:edit_showcase' %}" class="btn btn-primary btn-lg w-100 mt-3">Редактировать витрину</a>
+  {% endif %}
+</div>
+{% endblock %}

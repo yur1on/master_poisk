@@ -99,6 +99,8 @@
         <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
         <p><strong>Сферы деятельности:</strong></p>
+        <p><strong>Описание:</strong> {{ workshop_profile.description|default:"Не указано" }}</p>
+        <p><strong>Время работы:</strong> {{ workshop_profile.working_hours|default:"Не указано" }}</p>
         {% if grouped_activities %}
           {% for category, activities in grouped_activities.items %}
             <h5>{{ category }}</h5>
@@ -118,6 +120,7 @@
   {% endif %}
 
   <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100">Редактировать профиль</a>
+
 </div>
 
 <!-- Подключение шрифта Roboto и FontAwesome -->

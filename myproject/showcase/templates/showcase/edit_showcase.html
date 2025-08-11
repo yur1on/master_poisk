@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Редактировать витрину{% endblock %}
+{% block content %}
+<style>
+  .add-btn {
+    background-color: #00897b;
+    color: white;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .add-btn:hover {
+    background-color: #00695c;
+  }
+  .remove-btn {
+    background-color: #d32f2f;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  .gallery-form {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  .gallery-form .remove-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none; /* Hide initially for new forms */
+  }
+  .gallery-form.existing .remove-form {
+    display: block; /* Show for existing */
+  }
+</style>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 beauty-form">
+        <h2 class="text-center mb-4">Редактировать витрину</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <h4>Галерея работ</h4>
+            {{ formset.management_form }}
+            <div id="gallery-forms">
+                {% for fs_form in formset %}
+                    <div class="gallery-form row mb-3 {% if fs_form.instance.pk %}existing{% endif %}">
+                        <div class="col-md-5">{{ fs_form.image|crispy }}</div>
+                        <div class="col-md-5">{{ fs_form.description|crispy }}</div>
+                        <div class="col-md-2">
+                            {% if fs_form.instance.pk %}
+                                {{ fs_form.DELETE|crispy }}
+                            {% endif %}
+                            <div class="remove-form remove-btn">×</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="add-gallery-form" class="add-btn">+</div>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formContainer = document.getElementById('gallery-forms');
+    const addButton = document.getElementById('add-gallery-form');
+    const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+    const maxForms = {{ formset.max_num|default:20 }};
+    let formNum = parseInt(totalForms.value);
+
+    addButton.addEventListener('click', function() {
+        if (formNum >= maxForms) {
+            alert('Максимальное количество фото: ' + maxForms);
+            return;
+        }
+
+        // Clone an empty form template (use the last one if empty, or create a blank)
+        let templateForm = formContainer.querySelector('.gallery-form:not(.existing):last-child');
+        if (!templateForm) {
+            // If no empty form, create a basic one (fallback)
+            templateForm = document.createElement('div');
+            templateForm.className = 'gallery-form row mb-3';
+            templateForm.innerHTML = `
+                <div class="col-md-5"><div class="form-group"><label>Изображение работы</label><input type="file" name="form-${formNum}-image" class="form-control"></div></div>
+                <div class="col-md-5"><div class="form-group"><label>Описание</label><input type="text" name="form-${formNum}-description" class="form-control"></div></div>
+                <div class="col-md-2"><div class="remove-form remove-btn">×</div></div>
+            `;
+        } else {
+            templateForm = templateForm.cloneNode(true);
+        }
+
+        // Update indices
+        const formRegex = /form-(\d+)-/g;
+        templateForm.innerHTML = templateForm.innerHTML.replace(formRegex, `form-${formNum}-`);
+        // Clear values
+        templateForm.querySelector('input[type="file"]').value = '';
+        templateForm.querySelector('input[type="text"]').value = '';
+        // Remove DELETE if present
+        const deleteField = templateForm.querySelector('input[type="checkbox"]');
+        if (deleteField) deleteField.parentNode.remove();
+        // Ensure remove button is visible
+        const removeBtn = templateForm.querySelector('.remove-form');
+        removeBtn.style.display = 'block';
+        removeBtn.addEventListener('click', removeForm);
+
+        formContainer.appendChild(templateForm);
+        totalForms.value = ++formNum;
+        console.log('Added form, total:', formNum);  // Debug
+    });
+
+    // Add remove to existing
+    document.querySelectorAll('.remove-form').forEach(btn => btn.addEventListener('click', removeForm));
+
+    function removeForm() {
+        const formDiv = this.closest('.gallery-form');
+        const deleteCheckbox = formDiv.querySelector('input[type="checkbox"]');
+        if (deleteCheckbox) {
+            deleteCheckbox.checked = true;
+            formDiv.style.display = 'none';
+        } else {
+            formDiv.remove();
+            formNum--;
+            totalForms.value = formNum;
+        }
+        updateFormIndices();
+        console.log('Removed form, total:', formNum);  // Debug
+    }
+
+    function updateFormIndices() {
+        const forms = Array.from(formContainer.children);
+        forms.forEach((form, index) => {
+            if (form.style.display === 'none') return;
+            form.querySelectorAll('input, textarea').forEach(input => {
+                if (input.name) {
+                    input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
+                    input.id = input.id.replace(/form-\d+-/, `form-${index}-`);
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

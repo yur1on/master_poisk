@@ -46,6 +46,8 @@ class WorkshopProfile(models.Model):
     workshop_address = models.CharField("Адрес", max_length=255)
     phone = models.CharField("Телефон бьюти-студии", max_length=20)
     city = models.CharField("Город", max_length=100, blank=True)
+    description = models.TextField(blank=True, verbose_name='Описание')
+    working_hours = models.CharField(max_length=255, blank=True, verbose_name='Время работы')
     activity_area = models.ManyToManyField(
         ActivityArea,
         verbose_name='Сферы деятельности'
