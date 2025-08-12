@@ -22,8 +22,19 @@ def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            login(request, form.get_user())
-            return redirect('main:home')
+            user = form.get_user()
+            login(request, user)
+            # Conditional redirect based on user type
+            try:
+                user.workshopprofile  # Check if workshop
+                return redirect('showcase:view_showcase', username=user.username)
+            except WorkshopProfile.DoesNotExist:
+                try:
+                    user.clientprofile  # Check if client
+                    return redirect('accounts:profile')
+                except ClientProfile.DoesNotExist:
+                    pass
+            return redirect('main:home')  # Fallback for other users
     else:
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
@@ -41,7 +52,6 @@ def register_client(request):
         if form.is_valid():
             try:
                 user = form.save()
-                # Проверяем, существует ли профиль клиента
                 if not ClientProfile.objects.filter(user=user).exists():
                     ClientProfile.objects.create(
                         user=user,
@@ -50,12 +60,14 @@ def register_client(request):
                         city=form.cleaned_data['city']
                     )
                 login(request, user)
-                return redirect('main:home')
+                # Redirect to profile for clients
+                return redirect('accounts:profile')
             except IntegrityError:
                 form.add_error(None, "Пользователь с таким именем уже существует.")
     else:
         form = ClientRegisterForm()
     return render(request, 'accounts/register_client.html', {'form': form})
+
 
 def register_workshop(request):
     if request.method == 'POST':
@@ -63,7 +75,8 @@ def register_workshop(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('main:home')
+            # Redirect to showcase for workshops
+            return redirect('showcase:view_showcase', username=user.username)
     else:
         form = WorkshopRegisterForm()
     return render(request, 'accounts/register_workshop.html', {'form': form})

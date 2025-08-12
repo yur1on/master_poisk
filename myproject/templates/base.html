@@ -23,13 +23,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'search:search' %}">Поиск организаций</a>
+                    </li>
                     {% if user.is_authenticated %}
                         {% if is_workshop %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'showcase:view_showcase' username=user.username %}">Витрина</a>
                             </li>
                         {% endif %}
-
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'accounts:profile' %}">Профиль</a>
                         </li>

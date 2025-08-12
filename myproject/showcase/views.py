@@ -5,6 +5,13 @@ from accounts.models import WorkshopProfile
 from .models import Showcase
 from .forms import ShowcaseForm, GalleryFormSet, GalleryImageForm
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from accounts.models import WorkshopProfile
+from .models import Showcase
+from .forms import ShowcaseForm, GalleryFormSet, GalleryImageForm
+
 @login_required
 def edit_showcase(request):
     try:
@@ -32,8 +39,6 @@ def edit_showcase(request):
 
     return render(request, 'showcase/edit_showcase.html', {'form': form, 'formset': formset})
 
-
-@login_required
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
     is_owner = request.user.is_authenticated and request.user == user
@@ -52,14 +57,15 @@ def view_showcase(request, username):
 
     gallery = showcase.gallery_images.all()
 
+    upload_form = None
     if is_owner and request.method == 'POST':
         upload_form = GalleryImageForm(request.POST, request.FILES)
         if upload_form.is_valid():
             new_image = upload_form.save(commit=False)
             new_image.showcase = showcase
             new_image.save()
-            return redirect('showcase:view_showcase', username=username)  # Refresh page
-    else:
+            return redirect('showcase:view_showcase', username=username)
+    elif is_owner:
         upload_form = GalleryImageForm()
 
     return render(request, 'showcase/view_showcase.html', {
@@ -69,3 +75,4 @@ def view_showcase(request, username):
         'is_owner': is_owner,
         'upload_form': upload_form,
     })
+

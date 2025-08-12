@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'showcase',
+    'search',
 
 
 ]
@@ -73,10 +74,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.user_type',  # Add this line
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
