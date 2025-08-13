@@ -1,10 +1,7 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from accounts.models import WorkshopProfile
-from .models import Showcase
-from .forms import ShowcaseForm, GalleryFormSet, GalleryImageForm
 
+from .models import Showcase, GalleryImage
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -76,3 +73,15 @@ def view_showcase(request, username):
         'upload_form': upload_form,
     })
 
+@login_required
+@require_POST
+def delete_image(request, image_id):
+    try:
+        image = get_object_or_404(GalleryImage, id=image_id)
+        if image.showcase.workshop.user == request.user:
+            image.delete()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

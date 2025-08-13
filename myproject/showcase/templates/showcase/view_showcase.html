@@ -49,6 +49,9 @@
     color: #424242;
     line-height: 1.6;
   }
+  .description-text {
+    white-space: pre-wrap;
+  }
   .highlight-phone {
     background: linear-gradient(135deg, #ce93d8, #f06292, #5c6bc0); /* Purple-pink-blue gradient */
     color: #fff; /* White text for contrast */
@@ -70,30 +73,56 @@
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
-  /* Masonry-style gallery */
+  /* Flexbox gallery */
   .gallery-grid {
-    column-count: 3;
-    column-gap: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
     margin-top: 20px;
   }
   .gallery-item {
-    break-inside: avoid;
+    flex: 1 1 calc(33.333% - 10px); /* 3 колонки с учётом gap */
+    box-sizing: border-box;
     margin-bottom: 15px;
+    position: relative;
+    isolation: isolate; /* Изоляция контекста рендеринга */
   }
   .gallery-item img {
     width: 100%;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
+    cursor: pointer;
+    will-change: box-shadow; /* Оптимизация для Safari */
   }
   .gallery-item img:hover {
-    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Только тень */
+  }
+  .gallery-item img:active {
+    opacity: 1; /* Явный сброс прозрачности при клике */
   }
   .gallery-item p {
     font-size: 0.9rem;
     color: #616161;
     margin-top: 8px;
     text-align: center;
+  }
+  /* Delete button */
+  .delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #d32f2f;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .delete-btn:hover {
+    background-color: #b71c1c;
   }
   /* Upload form */
   .upload-form {
@@ -133,9 +162,25 @@
     background: #d81b60; /* Pink on hover */
     transform: scale(1.03);
   }
+  /* Modal styles */
+  .modal-content {
+    border-radius: 12px;
+    background: #fff;
+  }
+  .modal-body img {
+    width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+  .modal-body p {
+    margin-top: 15px;
+    color: #424242;
+    text-align: center;
+  }
   @media (max-width: 768px) {
-    .gallery-grid {
-      column-count: 2;
+    .gallery-item {
+      flex: 1 1 calc(50% - 10px); /* 2 колонки */
     }
     .showcase-header h1 {
       font-size: 2rem;
@@ -145,8 +190,8 @@
     }
   }
   @media (max-width: 576px) {
-    .gallery-grid {
-      column-count: 1;
+    .gallery-item {
+      flex: 1 1 100%; /* 1 колонка */
     }
   }
 </style>
@@ -170,7 +215,7 @@
     <div class="col-md-8">
       <div class="content-card">
         <h4>О нас</h4>
-<p class="description-text">{{ workshop.description|default:"Описание не указано."|linebreaksbr }}</p>
+        <p class="description-text">{{ workshop.description|default:"Описание не указано."|linebreaksbr }}</p>
 
         <h4>Контакты</h4>
         <p><strong>Телефон:</strong> {{ workshop.phone }}</p>
@@ -198,9 +243,12 @@
         {% if gallery %}
           <div class="gallery-grid">
             {% for image in gallery %}
-              <div class="gallery-item">
+              <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ image.image.url }}" data-description="{{ image.description|default:'Без описания' }}">
                 <img src="{{ image.image.url }}" alt="{{ image.description|default:'Работа' }}">
                 <p>{{ image.description|default:"Без описания" }}</p>
+                {% if is_owner %}
+                  <button class="delete-btn" data-image-id="{{ image.id }}">Удалить</button>
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -211,26 +259,25 @@
     </div>
 
     <!-- Right Column: 1/3 -->
-<!-- Правая колонка: 1/3 -->
-<div class="col-md-4">
-  <div class="sidebar-card">
-    <h4>Найдите нас</h4>
-    <p><strong>Адрес:</strong> {{ workshop.workshop_address|default:"Адрес не указан" }}</p>
-    {% if workshop.workshop_address %}
-      <iframe
-        class="map-container w-100"
-        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBE6BIEb3sYS8pIPFrRJBVnOL_BxzZQ5Ts&q={{ workshop.workshop_address|urlencode }},{{ workshop.city|urlencode }}"
-        frameborder="0"
-        allowfullscreen
-        aria-hidden="false"
-        tabindex="0">
-      </iframe>
-    {% else %}
-      <p class="text-center">Карта недоступна: адрес не указан.</p>
-    {% endif %}
-    <div class="highlight-phone">Связаться: {{ workshop.phone }}</div>
-  </div>
-</div>
+    <div class="col-md-4">
+      <div class="sidebar-card">
+        <h4>Найдите нас</h4>
+        <p><strong>Адрес:</strong> {{ workshop.workshop_address|default:"Адрес не указан" }}</p>
+        {% if workshop.workshop_address %}
+          <iframe
+            class="map-container w-100"
+            src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBE6BIEb3sYS8pIPFrRJBVnOL_BxzZQ5Ts&q={{ workshop.workshop_address|urlencode }},{{ workshop.city|urlencode }}"
+            frameborder="0"
+            allowfullscreen
+            aria-hidden="false"
+            tabindex="0">
+          </iframe>
+        {% else %}
+          <p class="text-center">Карта недоступна: адрес не указан.</p>
+        {% endif %}
+        <div class="highlight-phone">Связаться: {{ workshop.phone }}</div>
+      </div>
+    </div>
   </div>
 
   {% if is_owner %}
@@ -238,5 +285,66 @@
   {% endif %}
 </div>
 
-<!-- Ensure Roboto is loaded (already in base.html) -->
+<!-- Modal for image enlargement -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Просмотр изображения</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <img src="" alt="Увеличенное изображение" id="modalImage">
+        <p id="modalDescription"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle image click to open modal
+  document.querySelectorAll('.gallery-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      // Prevent modal trigger if clicking delete button
+      if (e.target.classList.contains('delete-btn')) return;
+      const imageUrl = this.dataset.image;
+      const description = this.dataset.description;
+      document.getElementById('modalImage').src = imageUrl;
+      document.getElementById('modalDescription').textContent = description;
+    });
+  });
+
+  // Handle delete button click
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation(); // Prevent modal from opening
+      const imageId = this.dataset.imageId;
+      if (confirm('Вы уверены, что хотите удалить это изображение?')) {
+        fetch(`/showcase/delete_image/${imageId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            this.closest('.gallery-item').remove();
+            if (!document.querySelector('.gallery-grid').children.length) {
+              document.querySelector('.gallery-grid').outerHTML = '<p class="text-center">Галерея пуста.</p>';
+            }
+          } else {
+            alert('Ошибка при удалении изображения.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Произошла ошибка при удалении.');
+        });
+      }
+    });
+  });
+});
+</script>
 {% endblock %}
