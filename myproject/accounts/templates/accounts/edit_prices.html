@@ -4,75 +4,80 @@
 {% block content %}
 <style>
   .service-form {
-    border: 1px solid #ccc;
+    background: #f9f9f9;
     padding: 15px;
     border-radius: 8px;
+    border-left: 5px solid #00897b; /* цветная полоса слева */
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     margin-bottom: 15px;
-    position: relative;
-    background: #fff;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .service-form:hover {
+    border-color: #bbb;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
   }
   .remove-btn {
-    background-color: #d32f2f;
-    color: white;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
     cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .remove-btn:hover {
+    background-color: #f5c6cb;
+    color: #491217;
   }
   .add-btn {
     background-color: #00897b;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 10px auto;
+    margin: 15px auto;
     cursor: pointer;
+    transition: background 0.2s ease;
   }
-  .card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-  .card-header {
-    background: #2e7d32;
-    color: #fff;
-    border-radius: 12px 12px 0 0;
+  .add-btn:hover {
+    background-color: #00695c;
   }
   .btn-primary {
     background: #00897b;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 1rem;
   }
   .btn-primary:hover {
     background: #00695c;
   }
   .errorlist {
     color: #d32f2f;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 0;
   }
 </style>
 
 <div class="container mt-5">
   <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Редактировать цены на услуги</h4>
+    <div class="col-lg-9 col-md-11">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white text-center">
+          <h5 class="mb-0">Редактировать цены на услуги</h5>
         </div>
         <div class="card-body">
           {% if formset.errors or formset.non_form_errors %}
-            <div class="alert alert-danger">
-              <ul>
+            <div class="alert alert-danger p-2">
+              <ul class="mb-0">
                 {% for error in formset.non_form_errors %}
                   <li>{{ error }}</li>
                 {% endfor %}
@@ -89,21 +94,22 @@
             {{ formset.management_form }}
             <div id="service-forms">
               {% for form in formset %}
-                <div class="service-form row mb-3" data-service-name="{{ form.instance.service_name|default:'' }}">
-                  <div class="col-md-4">{{ form.activity_area|as_crispy_field }}</div>
-                  <div class="col-md-4">{{ form.service_name|as_crispy_field }}</div>
+                <div class="service-form row g-2 align-items-center" data-service-name="{{ form.instance.service_name|default:'' }}">
+                  <div class="col-md-3">{{ form.activity_area|as_crispy_field }}</div>
+                  <div class="col-md-3">{{ form.service_name|as_crispy_field }}</div>
                   <div class="col-md-2">{{ form.price|as_crispy_field }}</div>
-                  <div class="col-md-1">{{ form.duration|as_crispy_field }}</div>
+                  <div class="col-md-2">{{ form.duration|as_crispy_field }}</div>
+                  <div class="col-md-2 text-center">
+                    <button type="button" class="remove-btn">Удалить</button>
+                  </div>
                   {% if form.instance.pk %}
-                    <div class="col-md-1">{{ form.DELETE|as_crispy_field }}</div>
                     {{ form.id }}
                   {% endif %}
-                  <div class="remove-btn">×</div>
                 </div>
               {% endfor %}
             </div>
-            <div id="add-service-form" class="add-btn">+</div>
-            <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+            <button type="button" id="add-service-form" class="add-btn" title="Добавить услугу">+</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">💾 Сохранить</button>
           </form>
         </div>
       </div>
@@ -187,22 +193,15 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     const templateForm = formContainer.querySelector('.service-form:last-child').cloneNode(true);
-    // Очистка полей для новой формы
     templateForm.querySelector('input[name$="-DELETE"]')?.remove();
     templateForm.querySelector('input[name$="-id"]')?.remove();
     templateForm.querySelector('input[name$="price"]').value = '';
     templateForm.querySelector('input[name$="duration"]').value = '';
     templateForm.querySelector('select[name$="service_name"]').innerHTML = '<option value="">---------</option>';
     templateForm.dataset.serviceName = '';
-    templateForm.querySelector('.remove-btn').style.display = 'block';
     formContainer.appendChild(templateForm);
     updateFormIndices();
     initializeForm(templateForm);
-  });
-
-  // Отладка отправки формы
-  document.querySelector('#service-price-form').addEventListener('submit', function() {
-    console.log('Form data:', new FormData(this));
   });
 });
 </script>
