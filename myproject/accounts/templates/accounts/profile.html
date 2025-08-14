@@ -4,7 +4,7 @@
 {% block content %}
 <style>
   .profile-container {
-    background: linear-gradient(135deg, #ffffff, #fff3e0); /* Белый к золотистому */
+    background: linear-gradient(135deg, #ffffff, #fff3e0);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -22,14 +22,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   .card-header {
-    background: #2e7d32; /* Тёмно-зелёный */
+    background: #2e7d32;
     color: #fff;
     font-weight: 500;
     border-radius: 8px 8px 0 0;
     padding: 15px;
   }
   .btn-primary {
-    background: #00897b; /* Изумрудный */
+    background: #00897b;
     border: none;
     transition: transform 0.2s, background-color 0.2s;
     border-radius: 8px;
@@ -37,6 +37,17 @@
   }
   .btn-primary:hover {
     background: #00695c;
+    transform: scale(1.03);
+  }
+  .btn-secondary {
+    background: #8e24aa;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .btn-secondary:hover {
+    background: #d81b60;
     transform: scale(1.03);
   }
   h2, h4, h5 {
@@ -64,7 +75,7 @@
     padding: 0;
   }
   .activity-list li::before {
-    content: "\f00c"; /* FontAwesome check icon */
+    content: "\f00c";
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     color: #00897b;
@@ -98,9 +109,9 @@
         <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
         <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Сферы деятельности:</strong></p>
         <p><strong>Описание:</strong> {{ workshop_profile.description|default:"Не указано" }}</p>
         <p><strong>Время работы:</strong> {{ workshop_profile.working_hours|default:"Не указано" }}</p>
+        <p><strong>Сферы деятельности:</strong></p>
         {% if grouped_activities %}
           {% for category, activities in grouped_activities.items %}
             <h5>{{ category }}</h5>
@@ -119,11 +130,12 @@
     <p class="text-center">Профиль не найден.</p>
   {% endif %}
 
-  <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100">Редактировать профиль</a>
-
+  <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100 mb-3">Редактировать профиль</a>
+  {% if is_workshop %}
+    <a href="{% url 'accounts:edit_prices' %}" class="btn btn-secondary btn-lg w-100">Редактировать цены</a>
+  {% endif %}
 </div>
 
-<!-- Подключение шрифта Roboto и FontAwesome -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}

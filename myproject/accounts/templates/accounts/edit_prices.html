@@ -1,24 +1,209 @@
 {% extends 'base.html' %}
-
+{% load crispy_forms_tags %}
 {% block title %}Редактировать цены на услуги{% endblock %}
-
 {% block content %}
+<style>
+  .service-form {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+    background: #fff;
+  }
+  .remove-btn {
+    background-color: #d32f2f;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  .add-btn {
+    background-color: #00897b;
+    color: white;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+    cursor: pointer;
+  }
+  .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  .card-header {
+    background: #2e7d32;
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+  }
+  .btn-primary {
+    background: #00897b;
+    border: none;
+    border-radius: 8px;
+  }
+  .btn-primary:hover {
+    background: #00695c;
+  }
+  .errorlist {
+    color: #d32f2f;
+    font-size: 0.9rem;
+  }
+</style>
+
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Редактировать цены на услуги</h4>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
-                    </form>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">Редактировать цены на услуги</h4>
         </div>
+        <div class="card-body">
+          {% if formset.errors or formset.non_form_errors %}
+            <div class="alert alert-danger">
+              <ul>
+                {% for error in formset.non_form_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for form in formset %}
+                  {% for field, errors in form.errors.items %}
+                    <li>{{ field }}: {{ errors|join:", " }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          <form method="post" id="service-price-form">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <div id="service-forms">
+              {% for form in formset %}
+                <div class="service-form row mb-3" data-service-name="{{ form.instance.service_name|default:'' }}">
+                  <div class="col-md-4">{{ form.activity_area|as_crispy_field }}</div>
+                  <div class="col-md-4">{{ form.service_name|as_crispy_field }}</div>
+                  <div class="col-md-2">{{ form.price|as_crispy_field }}</div>
+                  <div class="col-md-1">{{ form.duration|as_crispy_field }}</div>
+                  {% if form.instance.pk %}
+                    <div class="col-md-1">{{ form.DELETE|as_crispy_field }}</div>
+                    {{ form.id }}
+                  {% endif %}
+                  <div class="remove-btn">×</div>
+                </div>
+              {% endfor %}
+            </div>
+            <div id="add-service-form" class="add-btn">+</div>
+            <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const serviceMap = {{ service_map|safe }};
+  const activityCodes = {{ activity_codes|safe }};
+  const formContainer = document.getElementById('service-forms');
+  const addButton = document.getElementById('add-service-form');
+  const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+  const maxForms = {{ formset.max_num|default:100 }};
+  let formNum = parseInt(totalForms.value);
+
+  function updateServiceChoices(select, serviceSelect) {
+    const code = activityCodes[select.value] || '';
+    const services = serviceMap[code] || [];
+    serviceSelect.innerHTML = '<option value="">---------</option>';
+    services.forEach(service => {
+      const option = document.createElement('option');
+      option.value = service;
+      option.text = service;
+      serviceSelect.appendChild(option);
+    });
+    const formDiv = select.closest('.service-form');
+    const selectedService = formDiv.dataset.serviceName || '';
+    if (selectedService && services.includes(selectedService)) {
+      serviceSelect.value = selectedService;
+    } else {
+      serviceSelect.value = '';
+    }
+  }
+
+  function updateFormIndices() {
+    const forms = Array.from(formContainer.querySelectorAll('.service-form'));
+    forms.forEach((form, index) => {
+      if (form.style.display === 'none') return;
+      form.querySelectorAll('input, select, textarea').forEach(input => {
+        if (input.name) {
+          input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
+          input.id = input.id.replace(/id_form-\d+-/, `id_form-${index}-`);
+        }
+      });
+    });
+    totalForms.value = forms.filter(form => form.style.display !== 'none').length;
+    formNum = parseInt(totalForms.value);
+  }
+
+  function removeForm(event) {
+    const formDiv = event.target.closest('.service-form');
+    const deleteCheckbox = formDiv.querySelector('input[name$="-DELETE"]');
+    if (deleteCheckbox) {
+      deleteCheckbox.checked = true;
+      formDiv.style.display = 'none';
+    } else {
+      formDiv.remove();
+    }
+    updateFormIndices();
+  }
+
+  function initializeForm(form) {
+    const select = form.querySelector('select[name$="activity_area"]');
+    const serviceSelect = form.querySelector('select[name$="service_name"]');
+    updateServiceChoices(select, serviceSelect);
+    select.addEventListener('change', () => {
+      updateServiceChoices(select, serviceSelect);
+      form.dataset.serviceName = '';
+    });
+    const removeBtn = form.querySelector('.remove-btn');
+    removeBtn.addEventListener('click', removeForm);
+  }
+
+  document.querySelectorAll('.service-form').forEach(initializeForm);
+
+  addButton.addEventListener('click', function() {
+    if (formNum >= maxForms) {
+      alert('Максимальное количество услуг: ' + maxForms);
+      return;
+    }
+    const templateForm = formContainer.querySelector('.service-form:last-child').cloneNode(true);
+    // Очистка полей для новой формы
+    templateForm.querySelector('input[name$="-DELETE"]')?.remove();
+    templateForm.querySelector('input[name$="-id"]')?.remove();
+    templateForm.querySelector('input[name$="price"]').value = '';
+    templateForm.querySelector('input[name$="duration"]').value = '';
+    templateForm.querySelector('select[name$="service_name"]').innerHTML = '<option value="">---------</option>';
+    templateForm.dataset.serviceName = '';
+    templateForm.querySelector('.remove-btn').style.display = 'block';
+    formContainer.appendChild(templateForm);
+    updateFormIndices();
+    initializeForm(templateForm);
+  });
+
+  // Отладка отправки формы
+  document.querySelector('#service-price-form').addEventListener('submit', function() {
+    console.log('Form data:', new FormData(this));
+  });
+});
+</script>
 {% endblock %}

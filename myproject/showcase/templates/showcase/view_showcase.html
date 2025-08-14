@@ -3,7 +3,6 @@
 {% block title %}Витрина {{ workshop.workshop_name }}{% endblock %}
 {% block content %}
 <style>
-  /* Modern beauty-themed styles with purple-pink-blue gradient */
   body {
     background: #f5f5f5;
     font-family: 'Roboto', sans-serif;
@@ -42,7 +41,7 @@
   .content-card h4, .sidebar-card h4 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #3f51b5; /* Blue for headers */
+    color: #3f51b5;
     margin-bottom: 15px;
   }
   .content-card p, .sidebar-card p {
@@ -53,8 +52,8 @@
     white-space: pre-wrap;
   }
   .highlight-phone {
-    background: linear-gradient(135deg, #ce93d8, #f06292, #5c6bc0); /* Purple-pink-blue gradient */
-    color: #fff; /* White text for contrast */
+    background: linear-gradient(135deg, #ce93d8, #f06292, #5c6bc0);
+    color: #fff;
     font-weight: 700;
     font-size: 1.2rem;
     padding: 12px 20px;
@@ -73,7 +72,6 @@
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
-  /* Carousel styles */
   .carousel-container {
     margin-top: 20px;
   }
@@ -89,26 +87,15 @@
   }
   .gallery-item img {
     width: 100%;
-    height: 200px; /* Fixed height for uniformity */
+    height: 200px;
     object-fit: cover;
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     cursor: pointer;
-    will-change: box-shadow;
   }
   .gallery-item img:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
-  .gallery-item img:active {
-    opacity: 1;
-  }
-  .gallery-item p {
-    font-size: 0.9rem;
-    color: #616161;
-    margin-top: 8px;
-    text-align: center;
-  }
-  /* Delete button */
   .delete-btn {
     position: absolute;
     top: 10px;
@@ -126,32 +113,6 @@
   .delete-btn:hover {
     background-color: #b71c1c;
   }
-  /* Upload form */
-  .upload-form {
-    background: linear-gradient(135deg, #ede7f6, #fce4ec);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
-  .upload-form label {
-    font-weight: 500;
-    color: #424242;
-  }
-  .upload-form input[type="file"], .upload-form input[type="text"] {
-    border-radius: 6px;
-    border: 1px solid #ce93d8;
-    padding: 10px;
-  }
-  .upload-form .btn-primary {
-    background: #8e24aa;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    transition: background 0.2s;
-  }
-  .upload-form .btn-primary:hover {
-    background: #d81b60;
-  }
   .btn-edit {
     background: #8e24aa;
     border: none;
@@ -164,7 +125,6 @@
     background: #d81b60;
     transform: scale(1.03);
   }
-  /* Modal styles */
   .modal-content {
     border-radius: 12px;
     background: #fff;
@@ -180,9 +140,21 @@
     color: #424242;
     text-align: center;
   }
+  .price-table {
+    width: 100%;
+    margin-top: 15px;
+  }
+  .price-table th, .price-table td {
+    padding: 10px;
+    text-align: left;
+  }
+  .price-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+  }
   @media (max-width: 768px) {
     .gallery-item {
-      flex: 0 0 calc(50% - 10px); /* 2 columns */
+      flex: 0 0 calc(50% - 10px);
     }
     .gallery-item img {
       height: 150px;
@@ -190,7 +162,7 @@
   }
   @media (max-width: 576px) {
     .gallery-item {
-      flex: 0 0 100%; /* 1 column */
+      flex: 0 0 100%;
     }
     .gallery-item img {
       height: 120px;
@@ -199,21 +171,17 @@
 </style>
 
 <div class="showcase-container">
-  <!-- Company Name -->
   <div class="showcase-header">
     <h1>{{ workshop.workshop_name }}</h1>
   </div>
 
-  <!-- Banner -->
   {% if showcase.cover_photo %}
     <img src="{{ showcase.cover_photo.url }}" alt="Баннер {{ workshop.workshop_name }}" class="banner-img">
   {% else %}
     <div class="alert alert-info text-center">Баннер не загружен.</div>
   {% endif %}
 
-  <!-- Main Content: 2/3 Left, 1/3 Right -->
   <div class="row">
-    <!-- Left Column: 2/3 -->
     <div class="col-md-8">
       <div class="content-card">
         <h4>О нас</h4>
@@ -223,22 +191,31 @@
         <p><strong>Телефон:</strong> {{ workshop.phone }}</p>
         <p><strong>Время работы:</strong> {{ workshop.working_hours|default:"Не указано." }}</p>
 
-        {% if is_owner %}
-          <h4 class="mt-4">Добавить фото в галерею</h4>
-          <form method="post" enctype="multipart/form-data" class="upload-form">
-            {% csrf_token %}
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                {{ upload_form.image.label_tag }}
-                {{ upload_form.image }}
-              </div>
-              <div class="col-md-6 mb-3">
-                {{ upload_form.description.label_tag }}
-                {{ upload_form.description }}
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary">Загрузить</button>
-          </form>
+        <h4>Услуги и цены</h4>
+        {% if grouped_prices %}
+          {% for category, prices in grouped_prices.items %}
+            <h5>{{ category }}</h5>
+            <table class="price-table">
+              <thead>
+                <tr>
+                  <th>Услуга</th>
+                  <th>Цена (руб.)</th>
+                  <th>Длительность</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for price in prices %}
+                  <tr>
+                    <td>{{ price.service_name }}</td>
+                    <td>{{ price.price }}</td>
+                    <td>{{ price.duration|default:"Не указано" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endfor %}
+        {% else %}
+          <p>Цены на услуги не указаны.</p>
         {% endif %}
 
         <h4>Галерея работ</h4>
@@ -282,7 +259,6 @@
       </div>
     </div>
 
-    <!-- Right Column: 1/3 -->
     <div class="col-md-4">
       <div class="sidebar-card">
         <h4>Найдите нас</h4>
@@ -309,7 +285,6 @@
   {% endif %}
 </div>
 
-<!-- Modal for image enlargement -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -327,10 +302,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Handle image click to open modal
   document.querySelectorAll('.gallery-item').forEach(item => {
     item.addEventListener('click', function(e) {
-      // Prevent modal trigger if clicking delete button
       if (e.target.classList.contains('delete-btn')) return;
       const imageUrl = this.dataset.image;
       const description = this.dataset.description || 'Без описания';
@@ -339,10 +312,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Handle delete button click
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
-      e.stopPropagation(); // Prevent modal from opening
+      e.stopPropagation();
       const imageId = this.dataset.imageId;
       if (confirm('Вы уверены, что хотите удалить это изображение?')) {
         fetch(`/showcase/delete_image/${imageId}/`, {
@@ -357,22 +329,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const parentItem = this.closest('.gallery-item');
             const parentSlide = parentItem.closest('.carousel-item');
             parentItem.remove();
-            // Check if slide is empty
             if (parentSlide.querySelectorAll('.gallery-item').length === 0) {
               parentSlide.remove();
             }
-            // Update carousel state
             const slides = document.querySelectorAll('.carousel-item');
             const galleryItems = document.querySelectorAll('.gallery-item');
             if (galleryItems.length === 0) {
-              // Gallery is empty
               document.querySelector('.carousel-container').outerHTML = '<p class="text-center">Галерея пуста.</p>';
             } else if (slides.length > 0 && !document.querySelector('.carousel-item.active')) {
-              // Set first slide as active
               const firstSlide = document.querySelector('.carousel-item');
               if (firstSlide) firstSlide.classList.add('active');
             }
-            // Remove navigation if fewer than 4 images remain
             if (galleryItems.length <= 3) {
               const controls = document.querySelectorAll('.carousel-control-prev, .carousel-control-next');
               controls.forEach(control => control.remove());

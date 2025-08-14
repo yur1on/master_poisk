@@ -1,7 +1,9 @@
-from django import forms
+
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import ClientProfile, WorkshopProfile, ActivityArea
+from .models import ClientProfile, WorkshopProfile, ActivityArea, ServicePrice
+from django import forms
+from django.forms import modelformset_factory
 from collections import OrderedDict
 
 class ClientRegisterForm(UserCreationForm):
@@ -50,8 +52,6 @@ class WorkshopRegisterForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         qs = ActivityArea.objects.order_by('category', 'name')
         self.fields['activity_area'].queryset = qs
-
-        # Словарь перевода категорий
         CATEGORY_TRANSLATIONS = {
             'hair': 'Уход за волосами',
             'nails': 'Ногтевой сервис',
@@ -66,8 +66,6 @@ class WorkshopRegisterForm(UserCreationForm):
             'alternative': 'Альтернативные направления',
             'education': 'Обучение и менторство'
         }
-
-        # Группируем для шаблона с переводом
         grouped = OrderedDict()
         for area in qs:
             cat = CATEGORY_TRANSLATIONS.get(area.category, area.get_category_display())
@@ -113,17 +111,18 @@ class WorkshopProfileForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         label='Сферы деятельности'
     )
+    description = forms.CharField(widget=forms.Textarea, required=False, label='Описание')
+    working_hours = forms.CharField(max_length=255, required=False, label='Время работы')
 
     class Meta:
         model = WorkshopProfile
-        fields = ['workshop_name', 'workshop_address', 'phone', 'city', 'activity_area']
+        fields = ['workshop_name', 'workshop_address', 'phone', 'city', 'activity_area', 'description', 'working_hours']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in ['workshop_name', 'workshop_address', 'phone', 'city']:
+        for field in ['workshop_name', 'workshop_address', 'phone', 'city', 'description', 'working_hours']:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
-
-        # Словарь перевода категорий
+        qs = ActivityArea.objects.order_by('category', 'name')
         CATEGORY_TRANSLATIONS = {
             'hair': 'Уход за волосами',
             'nails': 'Ногтевой сервис',
@@ -138,18 +137,51 @@ class WorkshopProfileForm(forms.ModelForm):
             'alternative': 'Альтернативные направления',
             'education': 'Обучение и менторство'
         }
-
-        # Группируем для шаблона с переводом
-        qs = ActivityArea.objects.order_by('category', 'name')
         grouped = OrderedDict()
         for area in qs:
             cat = CATEGORY_TRANSLATIONS.get(area.category, area.get_category_display())
             grouped.setdefault(cat, []).append(area)
         self.grouped_activity = grouped
 
-    description = forms.CharField(widget=forms.Textarea, required=False, label='Описание')
-    working_hours = forms.CharField(max_length=255, required=False, label='Время работы')
 
+
+class ServicePriceForm(forms.ModelForm):
     class Meta:
-        model = WorkshopProfile
-        fields = ['workshop_name', 'workshop_address', 'phone', 'city', 'activity_area', 'description', 'working_hours']
+        model = ServicePrice
+        fields = ['activity_area', 'service_name', 'price', 'duration']
+        labels = {
+            'activity_area': 'Сфера деятельности',
+            'service_name': 'Услуга',
+            'price': 'Цена (руб.)',
+            'duration': 'Длительность'
+        }
+        widgets = {
+            'activity_area': forms.Select(attrs={'class': 'form-control'}),
+            'service_name': forms.Select(attrs={'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
+            'duration': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, workshop=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if workshop:
+            self.fields['activity_area'].queryset = workshop.activity_area.all()
+        self.fields['service_name'].choices = [('', '---------')]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data.get('activity_area'):
+            raise forms.ValidationError({'activity_area': 'Выберите сферу деятельности.'})
+        if not cleaned_data.get('service_name'):
+            raise forms.ValidationError({'service_name': 'Выберите услугу.'})
+        if not cleaned_data.get('price'):
+            raise forms.ValidationError({'price': 'Укажите цену.'})
+        return cleaned_data
+
+ServicePriceFormSet = modelformset_factory(
+    ServicePrice,
+    form=ServicePriceForm,
+    extra=1,
+    can_delete=True,
+    max_num=100
+)
