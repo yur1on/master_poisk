@@ -1,4 +1,3 @@
-# showcase/views.py
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,10 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from accounts.models import WorkshopProfile, ServicePrice
 from .models import Showcase, GalleryImage
-from .forms import ShowcaseForm, GalleryImageFormSet
+from .forms import ShowcaseForm, GalleryImageFormSet, GalleryImageForm
 from collections import OrderedDict
-from django.contrib.staticfiles import finders
-import json
+from django.core.exceptions import ValidationError
+from PIL import Image
+import os
+
 
 @login_required
 def edit_showcase(request):
@@ -21,12 +22,27 @@ def edit_showcase(request):
     if request.method == 'POST':
         form = ShowcaseForm(request.POST, request.FILES, instance=showcase)
         formset = GalleryImageFormSet(request.POST, request.FILES, queryset=showcase.gallery_images.all())
+
+        # Проверка размера и формата изображений
+        for f in request.FILES.getlist('form-0-image') + [request.FILES.get('cover_photo')]:
+            if f:
+                if f.size > 5 * 1024 * 1024:  # 5MB
+                    form.add_error(None, 'Размер изображения не должен превышать 5 МБ.')
+                    continue
+                try:
+                    img = Image.open(f)
+                    if img.format not in ['JPEG', 'PNG', 'GIF']:
+                        form.add_error(None, 'Формат изображения должен быть JPEG, PNG или GIF.')
+                except Exception:
+                    form.add_error(None, 'Недопустимый формат изображения.')
+
         if form.is_valid() and formset.is_valid():
             form.save()
             instances = formset.save(commit=False)
             for instance in instances:
-                instance.showcase = showcase
-                instance.save()
+                if instance.image:
+                    instance.showcase = showcase
+                    instance.save()
             for instance in formset.deleted_objects:
                 instance.delete()
             return redirect('showcase:view_showcase', username=request.user.username)
@@ -34,6 +50,7 @@ def edit_showcase(request):
         form = ShowcaseForm(instance=showcase)
         formset = GalleryImageFormSet(queryset=showcase.gallery_images.all())
     return render(request, 'showcase/edit_showcase.html', {'form': form, 'formset': formset})
+
 
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
@@ -48,6 +65,7 @@ def view_showcase(request, username):
         if is_owner:
             return redirect('showcase:edit_showcase')
         return render(request, 'showcase/not_found.html', {'username': username})
+
     gallery = showcase.gallery_images.all()
     prices = ServicePrice.objects.filter(workshop=workshop)
     grouped_prices = OrderedDict()
@@ -68,13 +86,38 @@ def view_showcase(request, username):
     for price in prices:
         cat = CATEGORY_TRANSLATIONS.get(price.activity_area.category, price.activity_area.get_category_display())
         grouped_prices.setdefault(cat, []).append(price)
+
+    if request.method == 'POST':
+        upload_form = GalleryImageForm(request.POST, request.FILES)
+        if upload_form.is_valid():
+            image = upload_form.cleaned_data['image']
+            if image.size > 5 * 1024 * 1024:  # 5MB
+                upload_form.add_error(None, 'Размер изображения не должен превышать 5 МБ.')
+            else:
+                try:
+                    img = Image.open(image)
+                    if img.format not in ['JPEG', 'PNG', 'GIF']:
+                        upload_form.add_error(None, 'Формат изображения должен быть JPEG, PNG или GIF.')
+                    else:
+                        gallery_image = upload_form.save(commit=False)
+                        gallery_image.showcase = showcase
+                        gallery_image.save()
+                        return redirect('showcase:view_showcase', username=username)
+                except Exception:
+                    upload_form.add_error(None, 'Недопустимый формат изображения.')
+        # Если форма невалидна, она передаётся в шаблон для отображения ошибок
+    else:
+        upload_form = GalleryImageForm()
+
     return render(request, 'showcase/view_showcase.html', {
         'workshop': workshop,
         'showcase': showcase,
         'gallery': gallery,
         'is_owner': is_owner,
-        'grouped_prices': grouped_prices
+        'grouped_prices': grouped_prices,
+        'upload_form': upload_form
     })
+
 
 @login_required
 @require_POST

@@ -3,6 +3,24 @@
 {% block title %}Редактировать витрину{% endblock %}
 {% block content %}
 <style>
+  .beauty-form {
+    background: linear-gradient(135deg, #ffffff, #fff3e0);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  .gallery-form {
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    position: relative;
+    background: #fff;
+    transition: box-shadow 0.2s;
+  }
+  .gallery-form:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
   .add-btn {
     background-color: #00897b;
     color: white;
@@ -30,132 +48,173 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    margin-top: 20px;
-  }
-  .gallery-form {
-    border: 1px solid #ccc;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    position: relative;
-  }
-  .gallery-form .remove-form {
     position: absolute;
     top: 10px;
     right: 10px;
-    display: none; /* Hide initially for new forms */
   }
-  .gallery-form.existing .remove-form {
-    display: block; /* Show for existing */
+  .remove-btn:hover {
+    background-color: #b71c1c;
+  }
+  .btn-primary {
+    background: #00897b;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover {
+    background: #00695c;
+    transform: scale(1.03);
+  }
+  h2 {
+    color: #212121;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    margin-bottom: 25px;
+  }
+  .errorlist {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+  .preview-img {
+    max-width: 100px;
+    margin-top: 10px;
+    border-radius: 4px;
   }
 </style>
 
 <div class="row justify-content-center mt-5">
-    <div class="col-md-8 beauty-form">
-        <h2 class="text-center mb-4">Редактировать витрину</h2>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <h4>Галерея работ</h4>
-            {{ formset.management_form }}
-            <div id="gallery-forms">
-                {% for fs_form in formset %}
-                    <div class="gallery-form row mb-3 {% if fs_form.instance.pk %}existing{% endif %}">
-                        <div class="col-md-5">{{ fs_form.image|crispy }}</div>
-                        <div class="col-md-5">{{ fs_form.description|crispy }}</div>
-                        <div class="col-md-2">
-                            {% if fs_form.instance.pk %}
-                                {{ fs_form.DELETE|crispy }}
-                            {% endif %}
-                            <div class="remove-form remove-btn">×</div>
-                        </div>
-                    </div>
-                {% endfor %}
+  <div class="col-md-8 beauty-form">
+    <h2 class="text-center mb-4">Редактировать витрину</h2>
+    {% if form.errors or formset.errors or formset.non_form_errors %}
+      <div class="alert alert-danger">
+        <ul class="errorlist">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+          {% for form in formset %}
+            {% for field, errors in form.errors.items %}
+              <li>{{ field }}: {{ errors|join:", " }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <fieldset class="mb-4">
+        <legend>Обложка витрины</legend>
+        {{ form|crispy }}
+      </fieldset>
+      <fieldset class="mb-4">
+        <legend>Галерея работ</legend>
+        {{ formset.management_form }}
+        <div id="gallery-forms">
+          {% for fs_form in formset %}
+            <div class="gallery-form row mb-3 {% if fs_form.instance.pk %}existing{% endif %}">
+              <div class="col-md-5">{{ fs_form.image|crispy }}</div>
+              <div class="col-md-5">{{ fs_form.description|crispy }}</div>
+              <div class="col-md-2 text-center">
+                {% if fs_form.instance.pk %}
+                  {{ fs_form.DELETE|crispy }}
+                {% endif %}
+                <div class="remove-btn">×</div>
+                {% if fs_form.instance.image %}
+                  <img src="{{ fs_form.instance.image.url }}" class="preview-img" alt="Превью">
+                {% endif %}
+              </div>
             </div>
-            <div id="add-gallery-form" class="add-btn">+</div>
-            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
-        </form>
-    </div>
+          {% endfor %}
+        </div>
+        <div id="add-gallery-form" class="add-btn" title="Добавить изображение">+</div>
+      </fieldset>
+      <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+    </form>
+  </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const formContainer = document.getElementById('gallery-forms');
-    const addButton = document.getElementById('add-gallery-form');
-    const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
-    const maxForms = {{ formset.max_num|default:20 }};
-    let formNum = parseInt(totalForms.value);
+  const formContainer = document.getElementById('gallery-forms');
+  const addButton = document.getElementById('add-gallery-form');
+  const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+  const maxForms = {{ formset.max_num|default:20 }};
+  let formNum = parseInt(totalForms.value);
 
-    addButton.addEventListener('click', function() {
-        if (formNum >= maxForms) {
-            alert('Максимальное количество фото: ' + maxForms);
-            return;
+  function updateFormIndices() {
+    const forms = Array.from(formContainer.children);
+    forms.forEach((form, index) => {
+      if (form.style.display === 'none') return;
+      form.querySelectorAll('input, textarea').forEach(input => {
+        if (input.name) {
+          input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
+          input.id = input.id.replace(/id_form-\d+-/, `id_form-${index}-`);
         }
-
-        // Clone an empty form template (use the last one if empty, or create a blank)
-        let templateForm = formContainer.querySelector('.gallery-form:not(.existing):last-child');
-        if (!templateForm) {
-            // If no empty form, create a basic one (fallback)
-            templateForm = document.createElement('div');
-            templateForm.className = 'gallery-form row mb-3';
-            templateForm.innerHTML = `
-                <div class="col-md-5"><div class="form-group"><label>Изображение работы</label><input type="file" name="form-${formNum}-image" class="form-control"></div></div>
-                <div class="col-md-5"><div class="form-group"><label>Описание</label><input type="text" name="form-${formNum}-description" class="form-control"></div></div>
-                <div class="col-md-2"><div class="remove-form remove-btn">×</div></div>
-            `;
-        } else {
-            templateForm = templateForm.cloneNode(true);
-        }
-
-        // Update indices
-        const formRegex = /form-(\d+)-/g;
-        templateForm.innerHTML = templateForm.innerHTML.replace(formRegex, `form-${formNum}-`);
-        // Clear values
-        templateForm.querySelector('input[type="file"]').value = '';
-        templateForm.querySelector('input[type="text"]').value = '';
-        // Remove DELETE if present
-        const deleteField = templateForm.querySelector('input[type="checkbox"]');
-        if (deleteField) deleteField.parentNode.remove();
-        // Ensure remove button is visible
-        const removeBtn = templateForm.querySelector('.remove-form');
-        removeBtn.style.display = 'block';
-        removeBtn.addEventListener('click', removeForm);
-
-        formContainer.appendChild(templateForm);
-        totalForms.value = ++formNum;
-        console.log('Added form, total:', formNum);  // Debug
+      });
     });
+    totalForms.value = forms.filter(form => form.style.display !== 'none').length;
+    formNum = parseInt(totalForms.value);
+  }
 
-    // Add remove to existing
-    document.querySelectorAll('.remove-form').forEach(btn => btn.addEventListener('click', removeForm));
-
-    function removeForm() {
-        const formDiv = this.closest('.gallery-form');
-        const deleteCheckbox = formDiv.querySelector('input[type="checkbox"]');
-        if (deleteCheckbox) {
-            deleteCheckbox.checked = true;
-            formDiv.style.display = 'none';
-        } else {
-            formDiv.remove();
-            formNum--;
-            totalForms.value = formNum;
-        }
-        updateFormIndices();
-        console.log('Removed form, total:', formNum);  // Debug
+  function removeForm(event) {
+    const formDiv = event.target.closest('.gallery-form');
+    const deleteCheckbox = formDiv.querySelector('input[name$="-DELETE"]');
+    if (deleteCheckbox) {
+      deleteCheckbox.checked = true;
+      formDiv.style.display = 'none';
+    } else {
+      formDiv.remove();
     }
+    updateFormIndices();
+  }
 
-    function updateFormIndices() {
-        const forms = Array.from(formContainer.children);
-        forms.forEach((form, index) => {
-            if (form.style.display === 'none') return;
-            form.querySelectorAll('input, textarea').forEach(input => {
-                if (input.name) {
-                    input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
-                    input.id = input.id.replace(/form-\d+-/, `form-${index}-`);
-                }
-            });
-        });
+  function previewImage(input, form) {
+    const existingPreview = form.querySelector('.preview-img');
+    if (existingPreview) existingPreview.remove();
+    if (input.files && input.files[0]) {
+      const preview = document.createElement('img');
+      preview.className = 'preview-img';
+      preview.src = URL.createObjectURL(input.files[0]);
+      form.querySelector('.col-md-2').appendChild(preview);
     }
+  }
+
+  addButton.addEventListener('click', function() {
+    if (formNum >= maxForms) {
+      alert('Максимальное количество изображений: ' + maxForms);
+      return;
+    }
+    const templateForm = formContainer.querySelector('.gallery-form:not(.existing):last-child')?.cloneNode(true) || document.createElement('div');
+    if (!templateForm.classList.contains('gallery-form')) {
+      templateForm.className = 'gallery-form row mb-3';
+      templateForm.innerHTML = `
+        <div class="col-md-5"><div class="form-group"><label>Изображение работы</label><input type="file" name="form-${formNum}-image" class="form-control" accept="image/*"></div></div>
+        <div class="col-md-5"><div class="form-group"><label>Описание</label><textarea name="form-${formNum}-description" class="form-control" rows="3" placeholder="Введите описание изображения"></textarea></div></div>
+        <div class="col-md-2 text-center"><div class="remove-btn">×</div></div>
+      `;
+    } else {
+      templateForm.querySelector('input[type="file"]').value = '';
+      templateForm.querySelector('textarea').value = '';
+      const deleteField = templateForm.querySelector('input[name$="-DELETE"]');
+      if (deleteField) deleteField.parentNode.remove();
+      const existingPreview = templateForm.querySelector('.preview-img');
+      if (existingPreview) existingPreview.remove();
+    }
+    templateForm.querySelector('.remove-btn').addEventListener('click', removeForm);
+    templateForm.querySelector('input[type="file"]').addEventListener('change', function() {
+      previewImage(this, templateForm);
+    });
+    formContainer.appendChild(templateForm);
+    updateFormIndices();
+  });
+
+  document.querySelectorAll('.remove-btn').forEach(btn => btn.addEventListener('click', removeForm));
+  document.querySelectorAll('input[type="file"]').forEach(input => {
+    input.addEventListener('change', function() {
+      previewImage(this, this.closest('.gallery-form'));
+    });
+  });
 });
 </script>
 {% endblock %}

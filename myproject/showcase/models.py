@@ -17,7 +17,7 @@ class Showcase(models.Model):
 class GalleryImage(models.Model):
     showcase = models.ForeignKey(Showcase, on_delete=models.CASCADE, related_name='gallery_images')
     image = models.ImageField(upload_to='showcase/gallery/', verbose_name='Изображение работы')
-    description = models.CharField(max_length=255, blank=True, verbose_name='Описание')
+    description = models.TextField(blank=True, verbose_name='Описание')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
