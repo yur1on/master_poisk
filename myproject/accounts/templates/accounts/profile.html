@@ -106,11 +106,8 @@
       <div class="card-body">
         <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
         <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
-        <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
         <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Описание:</strong> {{ workshop_profile.description|default:"Не указано" }}</p>
-        <p><strong>Время работы:</strong> {{ workshop_profile.working_hours|default:"Не указано" }}</p>
         <p><strong>Сферы деятельности:</strong></p>
         {% if grouped_activities %}
           {% for category, activities in grouped_activities.items %}
@@ -132,7 +129,7 @@
 
   <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100 mb-3">Редактировать профиль</a>
   {% if is_workshop %}
-    <a href="{% url 'accounts:edit_prices' %}" class="btn btn-secondary btn-lg w-100">Редактировать цены</a>
+    <a href="{% url 'showcase:edit_showcase' %}" class="btn btn-secondary btn-lg w-100">Редактировать витрину</a>
   {% endif %}
 </div>
 

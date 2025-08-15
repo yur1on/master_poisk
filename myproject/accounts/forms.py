@@ -1,4 +1,3 @@
-
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import ClientProfile, WorkshopProfile, ActivityArea, ServicePrice
@@ -31,7 +30,6 @@ class WorkshopRegisterForm(UserCreationForm):
     email = forms.EmailField(label='Email', required=True)
     workshop_name = forms.CharField(label='Название бьюти-студии', max_length=100)
     workshop_address = forms.CharField(label='Адрес', max_length=255)
-    phone = forms.CharField(label='Телефон бьюти-студии', max_length=20)
     city = forms.CharField(label='Город', max_length=100, required=False)
     activity_area = forms.ModelMultipleChoiceField(
         label='Сферы деятельности',
@@ -44,7 +42,7 @@ class WorkshopRegisterForm(UserCreationForm):
         fields = [
             'username', 'email',
             'workshop_name', 'workshop_address',
-            'phone', 'city', 'activity_area',
+            'city', 'activity_area',
             'password1', 'password2'
         ]
 
@@ -79,7 +77,6 @@ class WorkshopRegisterForm(UserCreationForm):
                 user=user,
                 workshop_name=self.cleaned_data['workshop_name'],
                 workshop_address=self.cleaned_data['workshop_address'],
-                phone=self.cleaned_data['phone'],
                 city=self.cleaned_data['city']
             )
             profile.activity_area.set(self.cleaned_data['activity_area'])
@@ -104,23 +101,20 @@ class WorkshopProfileForm(forms.ModelForm):
     email = forms.EmailField(label='Email', required=True)
     workshop_name = forms.CharField(label='Название бьюти-студии', max_length=100)
     workshop_address = forms.CharField(label='Адрес', max_length=255)
-    phone = forms.CharField(label='Телефон бьюти-студии', max_length=20)
     city = forms.CharField(label='Город', max_length=100, required=False)
     activity_area = forms.ModelMultipleChoiceField(
         queryset=ActivityArea.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         label='Сферы деятельности'
     )
-    description = forms.CharField(widget=forms.Textarea, required=False, label='Описание')
-    working_hours = forms.CharField(max_length=255, required=False, label='Время работы')
 
     class Meta:
         model = WorkshopProfile
-        fields = ['workshop_name', 'workshop_address', 'phone', 'city', 'activity_area', 'description', 'working_hours']
+        fields = ['workshop_name', 'workshop_address', 'city', 'activity_area']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in ['workshop_name', 'workshop_address', 'phone', 'city', 'description', 'working_hours']:
+        for field in ['workshop_name', 'workshop_address', 'city']:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
         qs = ActivityArea.objects.order_by('category', 'name')
         CATEGORY_TRANSLATIONS = {
@@ -142,8 +136,6 @@ class WorkshopProfileForm(forms.ModelForm):
             cat = CATEGORY_TRANSLATIONS.get(area.category, area.get_category_display())
             grouped.setdefault(cat, []).append(area)
         self.grouped_activity = grouped
-
-
 
 class ServicePriceForm(forms.ModelForm):
     class Meta:

@@ -5,7 +5,7 @@
 
 <style>
   .beauty-form {
-    background: linear-gradient(135deg, #ffffff, #fff3e0); /* Белый к золотистому */
+    background: linear-gradient(135deg, #ffffff, #fff3e0);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -21,14 +21,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   .card-header {
-    background: #2e7d32; /* Тёмно-зелёный */
+    background: #2e7d32;
     color: #fff;
     font-weight: 500;
     border-radius: 8px 8px 0 0;
     padding: 10px 15px;
   }
   .btn-primary {
-    background: #00897b; /* Изумрудный */
+    background: #00897b;
     border: none;
     transition: transform 0.2s, background-color 0.2s;
     border-radius: 8px;
@@ -52,7 +52,6 @@
   .custom-control-label {
     color: #424242;
   }
-  /* Кастомные квадратные чекбоксы */
   .custom-checkbox .custom-control-input {
     display: none;
   }
@@ -61,7 +60,7 @@
     display: inline-block;
     width: 18px;
     height: 18px;
-    border: 2px solid #00897b; /* Изумрудная рамка */
+    border: 2px solid #00897b;
     border-radius: 4px;
     margin-right: 10px;
     vertical-align: middle;
@@ -69,11 +68,11 @@
     transition: background-color 0.2s, border-color 0.2s;
   }
   .custom-checkbox .custom-control-input:checked + .custom-control-label::before {
-    background-color: #00897b; /* Изумрудный фон при выборе */
+    background-color: #00897b;
     border-color: #00897b;
   }
   .custom-checkbox .custom-control-input:checked + .custom-control-label::after {
-    content: '\2713'; /* Символ галочки */
+    content: '\2713';
     display: inline-block;
     position: absolute;
     left: 6px;
@@ -92,20 +91,13 @@
     <h2 class="text-center mb-4">Редактировать профиль бьюти-студии</h2>
     <form method="post">
       {% csrf_token %}
-
-      <!-- Секция: Детали профиля -->
       <fieldset class="mb-4">
         <legend>Детали профиля</legend>
         {{ form.workshop_name|as_crispy_field }}
         {{ form.workshop_address|as_crispy_field }}
-        {{ form.phone|as_crispy_field }}
         {{ form.city|as_crispy_field }}
         {{ form.email|as_crispy_field }}
-        {{ form.description|as_crispy_field }}
-        {{ form.working_hours|as_crispy_field }}
       </fieldset>
-
-      <!-- Секция: Сферы деятельности -->
       <fieldset class="mb-4">
         <legend>Сферы деятельности</legend>
         <div class="row">
@@ -141,13 +133,11 @@
           {% endfor %}
         </div>
       </fieldset>
-
       <button type="submit" class="btn btn-primary btn-lg w-100">Сохранить</button>
     </form>
   </div>
 </div>
 
-<!-- JavaScript для "Выбрать все" -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.select-all').forEach(function(selectAll) {
@@ -162,6 +152,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Подключение шрифта Roboto -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 {% endblock %}
