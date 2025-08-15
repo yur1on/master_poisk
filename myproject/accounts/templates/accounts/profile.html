@@ -3,13 +3,64 @@
 
 {% block content %}
 <style>
+  /* Общий контейнер */
+  .dashboard-container {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Сайдбар */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px; /* уже */
+    height: 100%;
+    background: #2f3b52; /* новый цвет */
+    padding: 15px 8px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+  }
+  .sidebar a {
+    display: block;
+    padding: 8px 10px;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .sidebar a.profile-btn {
+    background: #4db6ac;
+    color: white;
+  }
+  .sidebar a.profile-btn:hover {
+    background: #00897b;
+    transform: scale(1.02);
+  }
+  .sidebar a.showcase-btn {
+    background: #ba68c8;
+    color: white;
+  }
+  .sidebar a.showcase-btn:hover {
+    background: #8e24aa;
+    transform: scale(1.02);
+  }
+
+  /* Контент */
   .profile-container {
+    flex: 1;
+    margin-left: 200px; /* ширина боковой панели + небольшой запас */
     background: linear-gradient(135deg, #ffffff, #fff3e0);
-    padding: 30px;
+    padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    max-width: 800px;
-    margin: 50px auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    max-width: 900px;
+    margin-top: 30px;
   }
   .card {
     border: none;
@@ -26,49 +77,7 @@
     color: #fff;
     font-weight: 500;
     border-radius: 8px 8px 0 0;
-    padding: 15px;
-  }
-  .btn-primary {
-    background: #00897b;
-    border: none;
-    transition: transform 0.2s, background-color 0.2s;
-    border-radius: 8px;
     padding: 12px;
-  }
-  .btn-primary:hover {
-    background: #00695c;
-    transform: scale(1.03);
-  }
-  .btn-secondary {
-    background: #8e24aa;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    transition: background 0.2s, transform 0.2s;
-  }
-  .btn-secondary:hover {
-    background: #d81b60;
-    transform: scale(1.03);
-  }
-  h2, h4, h5 {
-    color: #212121;
-    font-family: 'Roboto', sans-serif;
-  }
-  h2 {
-    font-weight: 700;
-    margin-bottom: 25px;
-  }
-  h4 {
-    font-weight: 600;
-    margin-bottom: 0;
-  }
-  h5 {
-    font-weight: 500;
-    margin-top: 15px;
-  }
-  p, li {
-    color: #424242;
-    font-size: 1rem;
   }
   .activity-list {
     list-style: none;
@@ -83,54 +92,61 @@
   }
 </style>
 
-<div class="profile-container">
-  <h2 class="text-center mb-4">Личный кабинет</h2>
+<div class="dashboard-container">
+  <!-- Сайдбар -->
+  <div class="sidebar">
+    <a href="{% url 'accounts:edit_profile' %}" class="profile-btn">Редактировать профиль</a>
+    <a href="{% url 'accounts:edit_prices' %}" class="btn btn-secondary btn-lg w-100 mt-3">Редактировать цены</a>
+    {% if is_workshop %}
+      <a href="{% url 'showcase:edit_showcase' %}" class="showcase-btn">Редактировать витрину</a>
+    {% endif %}
+  </div>
 
-  {% if is_client %}
-    <div class="card mb-4">
-      <div class="card-header">
-        <h4>Профиль клиента</h4>
-      </div>
-      <div class="card-body">
-        <p><strong>Имя:</strong> {{ client_profile.name|default:user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
-        <p><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
-      </div>
-    </div>
-  {% elif is_workshop %}
-    <div class="card mb-4">
-      <div class="card-header">
-        <h4>Профиль бьюти-студии</h4>
-      </div>
-      <div class="card-body">
-        <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
-        <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
-        <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Сферы деятельности:</strong></p>
-        {% if grouped_activities %}
-          {% for category, activities in grouped_activities.items %}
-            <h5>{{ category }}</h5>
-            <ul class="activity-list">
-              {% for activity in activities %}
-                <li>{{ activity.name }}</li>
-              {% endfor %}
-            </ul>
-          {% endfor %}
-        {% else %}
-          <p>Не указано</p>
-        {% endif %}
-      </div>
-    </div>
-  {% else %}
-    <p class="text-center">Профиль не найден.</p>
-  {% endif %}
+  <!-- Контент -->
+  <div class="profile-container">
+    <h2 class="text-center mb-4">Личный кабинет</h2>
 
-  <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary btn-lg w-100 mb-3">Редактировать профиль</a>
-  {% if is_workshop %}
-    <a href="{% url 'showcase:edit_showcase' %}" class="btn btn-secondary btn-lg w-100">Редактировать витрину</a>
-  {% endif %}
+    {% if is_client %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Профиль клиента</h4>
+        </div>
+        <div class="card-body">
+          <p><strong>Имя:</strong> {{ client_profile.name|default:user.username }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
+          <p><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
+        </div>
+      </div>
+    {% elif is_workshop %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Профиль бьюти-студии</h4>
+        </div>
+        <div class="card-body">
+          <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
+          <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
+          <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <p><strong>Сферы деятельности:</strong></p>
+          {% if grouped_activities %}
+            {% for category, activities in grouped_activities.items %}
+              <h5>{{ category }}</h5>
+              <ul class="activity-list">
+                {% for activity in activities %}
+                  <li>{{ activity.name }}</li>
+                {% endfor %}
+              </ul>
+            {% endfor %}
+          {% else %}
+            <p>Не указано</p>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <p class="text-center">Профиль не найден.</p>
+    {% endif %}
+  </div>
 </div>
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">

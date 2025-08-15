@@ -1,53 +1,107 @@
 {% extends 'base.html' %}
-{% block title %}Регистрация мастерской{% endblock %}
-{% block content %}
 {% load crispy_forms_tags %}
+
+{% block title %}Регистрация бьюти-студии{% endblock %}
+
+{% block content %}
 <style>
   .beauty-form {
-    background: linear-gradient(135deg, #e6f0fa);
-    padding: 20px;
-    border-radius: 10px;
+    background: linear-gradient(135deg, #ffffff, #fff3e0);
+    padding: 25px;
+    border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Roboto', sans-serif;
   }
+
+  h2 {
+    color: #333;
+    font-weight: 600;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  legend {
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #444;
+  }
+
+  .errorlist {
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+
+  /* Карточки категорий */
   .card {
-    transition: transform 0.2s;
     border: none;
     background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
   }
   .card:hover {
     transform: scale(1.02);
   }
+  .card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 500;
+  }
 
+  /* Чекбоксы */
+  .form-check-input {
+    cursor: pointer;
+  }
+  .form-check-label {
+    cursor: pointer;
+  }
+
+  /* Кнопка */
   .btn-primary {
     background: #d63384;
     border: none;
-    transition: transform 0.2s, background-color 0.2s;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 1rem;
+    transition: background-color 0.2s, transform 0.2s;
+    width: 100%;
   }
   .btn-primary:hover {
     background: #c81e6f;
-    transform: scale(1.05);
-  }
-  h2 {
-    color: #333;
-    font-family: 'Arial', sans-serif;
-    font-weight: 600;
+    transform: scale(1.03);
   }
 </style>
 
-<div class="row justify-content-center mt-5">
-  <div class="col-md-8 beauty-form">
-    <h2 class="text-center mb-4">Регистрация бьюти-профессионала</h2>
+<div class="row justify-content-center mt-4">
+  <div class="beauty-form">
+    <h2>Регистрация бьюти-студии</h2>
     <form method="post">
       {% csrf_token %}
 
-      <!-- Секция: Детали мастерской -->
+      {% if form.non_field_errors %}
+        <div class="errorlist">
+          {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
       <fieldset class="mb-4">
+        <legend>Детали аккаунта</legend>
+        {{ form.username|as_crispy_field }}
+        {{ form.email|as_crispy_field }}
         {{ form.workshop_name|as_crispy_field }}
         {{ form.workshop_address|as_crispy_field }}
-        {{ form.phone|as_crispy_field }}
+        {{ form.city|as_crispy_field }}
+        {{ form.password1|as_crispy_field }}
+        {{ form.password2|as_crispy_field }}
       </fieldset>
 
-      <!-- Секция: Сферы деятельности -->
       <fieldset class="mb-4">
         <legend>Сферы деятельности</legend>
         <div class="row">
@@ -84,20 +138,11 @@
         </div>
       </fieldset>
 
-      <!-- Секция: Детали аккаунта -->
-      <fieldset class="mb-4">
-        {{ form.username|as_crispy_field }}
-        {{ form.email|as_crispy_field }}
-        {{ form.password1|as_crispy_field }}
-        {{ form.password2|as_crispy_field }}
-      </fieldset>
-
       <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
     </form>
   </div>
 </div>
 
-<!-- JavaScript для "Выбрать все" -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.select-all').forEach(function(selectAll) {
@@ -111,4 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 {% endblock %}
