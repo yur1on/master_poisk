@@ -9,9 +9,7 @@ from .forms import ShowcaseForm, GalleryImageForm
 from collections import OrderedDict
 import logging
 
-# Настройка логирования
 logger = logging.getLogger(__name__)
-
 
 @login_required
 def edit_showcase(request):
@@ -19,6 +17,8 @@ def edit_showcase(request):
         workshop = request.user.workshopprofile
     except WorkshopProfile.DoesNotExist:
         logger.error(f"WorkshopProfile не найден для пользователя {request.user.username}")
+        if request.is_ajax():
+            return JsonResponse({'success': False, 'errors': 'Workshop profile not found.'}, status=400)
         return redirect('accounts:profile')
 
     showcase, created = Showcase.objects.get_or_create(workshop=workshop)
@@ -28,14 +28,50 @@ def edit_showcase(request):
             logger.info(f"Форма валидна для пользователя {request.user.username}")
             form.save()
             logger.info(f"Витрина успешно сохранена для пользователя {request.user.username}")
+            if request.is_ajax():
+                return JsonResponse({
+                    'success': True,
+                    'description': workshop.description,
+                    'phone': workshop.phone,
+                    'working_hours': workshop.working_hours
+                })
             return redirect('showcase:view_showcase', username=request.user.username)
         else:
             logger.error(f"Ошибки формы: {form.errors}")
-    else:
-        form = ShowcaseForm(instance=showcase)
+            if request.is_ajax():
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    return redirect('accounts:profile')
 
-    return render(request, 'showcase/edit_showcase.html', {'form': form})
+@login_required
+def upload_gallery_image(request):
+    try:
+        workshop = request.user.workshopprofile
+        showcase = workshop.showcase
+    except (WorkshopProfile.DoesNotExist, Showcase.DoesNotExist):
+        if request.is_ajax():
+            return JsonResponse({'success': False, 'errors': 'Workshop or showcase not found.'}, status=400)
+        return redirect('accounts:profile')
 
+    if request.method == 'POST':
+        upload_form = GalleryImageForm(request.POST, request.FILES)
+        if upload_form.is_valid():
+            gallery_image = upload_form.save(commit=False)
+            gallery_image.showcase = showcase
+            gallery_image.save()
+            logger.info(f"Изображение галереи успешно загружено для пользователя {request.user.username}")
+            if request.is_ajax():
+                return JsonResponse({
+                    'success': True,
+                    'image_url': gallery_image.image.url,
+                    'description': gallery_image.description,
+                    'image_id': gallery_image.id
+                })
+            return redirect('showcase:view_showcase', username=request.user.username)
+        else:
+            logger.error(f"Ошибки формы загрузки изображения: {upload_form.errors}")
+            if request.is_ajax():
+                return JsonResponse({'success': False, 'errors': upload_form.errors.as_json()}, status=400)
+    return redirect('accounts:profile')
 
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
@@ -76,18 +112,7 @@ def view_showcase(request, username):
         cat = CATEGORY_TRANSLATIONS.get(price.activity_area.category, price.activity_area.get_category_display())
         grouped_prices.setdefault(cat, []).append(price)
 
-    if request.method == 'POST':
-        upload_form = GalleryImageForm(request.POST, request.FILES)
-        if upload_form.is_valid():
-            gallery_image = upload_form.save(commit=False)
-            gallery_image.showcase = showcase
-            gallery_image.save()
-            logger.info(f"Изображение галереи успешно загружено для пользователя {username}")
-            return redirect('showcase:view_showcase', username=username)
-        else:
-            logger.error(f"Ошибки формы загрузки изображения: {upload_form.errors}")
-    else:
-        upload_form = GalleryImageForm()
+    upload_form = GalleryImageForm()
 
     return render(request, 'showcase/view_showcase.html', {
         'workshop': workshop,
@@ -97,7 +122,6 @@ def view_showcase(request, username):
         'grouped_prices': grouped_prices,
         'upload_form': upload_form
     })
-
 
 @login_required
 @require_POST

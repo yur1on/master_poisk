@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static crispy_forms_tags %}
 
 {% block content %}
 <style>
@@ -14,9 +14,9 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 180px; /* уже */
+    width: 180px;
     height: 100%;
-    background: #2f3b52; /* новый цвет */
+    background: #2f3b52;
     padding: 15px 8px;
     box-shadow: 2px 0 10px rgba(0,0,0,0.08);
     display: flex;
@@ -33,20 +33,27 @@
     font-weight: 500;
     text-decoration: none;
     transition: background 0.2s, transform 0.2s;
+    color: white;
+    cursor: pointer;
   }
   .sidebar a.profile-btn {
     background: #4db6ac;
-    color: white;
   }
-  .sidebar a.profile-btn:hover {
+  .sidebar a.profile-btn:hover, .sidebar a.profile-btn.active {
     background: #00897b;
+    transform: scale(1.02);
+  }
+  .sidebar a.prices-btn {
+    background: #ff8a65;
+  }
+  .sidebar a.prices-btn:hover, .sidebar a.prices-btn.active {
+    background: #f4511e;
     transform: scale(1.02);
   }
   .sidebar a.showcase-btn {
     background: #ba68c8;
-    color: white;
   }
-  .sidebar a.showcase-btn:hover {
+  .sidebar a.showcase-btn:hover, .sidebar a.showcase-btn.active {
     background: #8e24aa;
     transform: scale(1.02);
   }
@@ -54,13 +61,14 @@
   /* Контент */
   .profile-container {
     flex: 1;
-    margin-left: 200px; /* ширина боковой панели + небольшой запас */
+    margin-left: 200px;
     background: linear-gradient(135deg, #ffffff, #fff3e0);
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     max-width: 900px;
     margin-top: 30px;
+    margin-bottom: 30px;
   }
   .card {
     border: none;
@@ -90,15 +98,156 @@
     color: #00897b;
     margin-right: 8px;
   }
+  .content-section {
+    display: none;
+  }
+  .content-section.active {
+    display: block;
+  }
+  .beauty-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .btn-primary {
+    background: #00897b;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .btn-primary:hover {
+    background: #00695c;
+    transform: scale(1.03);
+  }
+  .errorlist, .error-message {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+  }
+  /* Стили для edit_prices.html */
+  .service-form {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid #00897b;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    margin-bottom: 15px;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .service-form:hover {
+    border-color: #bbb;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  }
+  .remove-btn {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .remove-btn:hover {
+    background-color: #f5c6cb;
+    color: #491217;
+  }
+  .add-btn {
+    background-color: #00897b;
+    color: white;
+    font-size: 1.4rem;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 15px auto;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .add-btn:hover {
+    background-color: #00695c;
+  }
+  /* Стили для edit_workshop_profile.html */
+  .custom-checkbox .custom-control-input {
+    display: none;
+  }
+  .custom-checkbox .custom-control-label::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #00897b;
+    border-radius: 4px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background-color: #fff;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .custom-checkbox .custom-control-input:checked + .custom-control-label::before {
+    background-color: #00897b;
+    border-color: #00897b;
+  }
+  .custom-checkbox .custom-control-input:checked + .custom-control-label::after {
+    content: '\2713';
+    display: inline-block;
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .custom-checkbox .custom-control-label:hover::before {
+    border-color: #00695c;
+  }
+  /* Стили для edit_showcase.html */
+  .upload-form {
+    background: linear-gradient(135deg, #ede7f6, #fce4ec);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  .upload-form label {
+    font-weight: 500;
+    color: #424242;
+  }
+  .upload-form input[type="file"], .upload-form textarea {
+    border-radius: 6px;
+    border: 1px solid #ce93d8;
+    padding: 10px;
+  }
+  .upload-form textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  /* Стили для галереи в профиле */
+  .gallery-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .gallery-item p {
+    margin: 10px 0;
+    font-size: 0.9rem;
+  }
 </style>
 
 <div class="dashboard-container">
   <!-- Сайдбар -->
   <div class="sidebar">
-    <a href="{% url 'accounts:edit_profile' %}" class="profile-btn">Редактировать профиль</a>
-    <a href="{% url 'accounts:edit_prices' %}" class="btn btn-secondary btn-lg w-100 mt-3">Редактировать цены</a>
+    <a href="#" class="profile-btn active" data-section="profile-details">Профиль</a>
+    <a href="#" class="profile-btn" data-section="edit-profile">Редактировать профиль</a>
     {% if is_workshop %}
-      <a href="{% url 'showcase:edit_showcase' %}" class="showcase-btn">Редактировать витрину</a>
+      <a href="#" class="prices-btn" data-section="edit-prices">Редактировать цены</a>
+      <a href="#" class="showcase-btn" data-section="edit-showcase">Редактировать витрину</a>
     {% endif %}
   </div>
 
@@ -106,48 +255,463 @@
   <div class="profile-container">
     <h2 class="text-center mb-4">Личный кабинет</h2>
 
-    {% if is_client %}
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Профиль клиента</h4>
+    <!-- Секция: Профиль -->
+    <div id="profile-details" class="content-section active">
+      {% if is_client %}
+        <div class="card mb-4">
+          <div class="card-header">
+            <h4>Профиль клиента</h4>
+          </div>
+          <div class="card-body">
+            <p><strong>Имя:</strong> {{ client_profile.name|default:user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
+            <p><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
+          </div>
         </div>
-        <div class="card-body">
-          <p><strong>Имя:</strong> {{ client_profile.name|default:user.username }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          <p><strong>Телефон:</strong> {{ client_profile.phone }}</p>
-          <p><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
+      {% elif is_workshop %}
+        <div class="card mb-4">
+          <div class="card-header">
+            <h4>Профиль бьюти-студии</h4>
+          </div>
+          <div class="card-body">
+            <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
+            <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
+            <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
+            <p><strong>Описание:</strong> {{ workshop_profile.description|default:"Не указано" }}</p>
+            <p><strong>Время работы:</strong> {{ workshop_profile.working_hours|default:"Не указано" }}</p>
+            <p><strong>Сферы деятельности:</strong></p>
+            {% if grouped_activities %}
+              {% for category, activities in grouped_activities.items %}
+                <h5>{{ category }}</h5>
+                <ul class="activity-list">
+                  {% for activity in activities %}
+                    <li>{{ activity.name }}</li>
+                  {% endfor %}
+                </ul>
+              {% endfor %}
+            {% else %}
+              <p>Не указано</p>
+            {% endif %}
+            <h4>Услуги и цены</h4>
+            {% if workshop_profile.service_prices.exists %}
+              {% for category, prices in grouped_prices.items %}
+                <h5>{{ category }}</h5>
+                <table class="table price-table">
+                  <thead>
+                    <tr>
+                      <th>Услуга</th>
+                      <th>Цена (руб.)</th>
+                      <th>Длительность</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for price in prices %}
+                      <tr>
+                        <td>{{ price.service_name }}</td>
+                        <td>{{ price.price }}</td>
+                        <td>{{ price.duration|default:"Не указано" }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              {% endfor %}
+            {% else %}
+              <p>Цены на услуги не указаны.</p>
+            {% endif %}
+            {% if gallery %}
+              <h4 class="mt-4">Галерея работ</h4>
+              <div class="row mt-3">
+                {% for image in gallery %}
+                  <div class="col-md-4 gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ image.image.url }}" data-description="{{ image.description|default:'Без описания' }}">
+                    <img src="{{ image.image.url }}" alt="{{ image.description|default:'Работа' }}">
+                    <p>{{ image.description|default:"Без описания" }}</p>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-center">Галерея пуста.</p>
+            {% endif %}
+          </div>
         </div>
+      {% else %}
+        <p class="text-center">Профиль не найден.</p>
+      {% endif %}
+    </div>
+
+    <!-- Секция: Редактирование профиля -->
+    <div id="edit-profile" class="content-section">
+      <div class="beauty-form">
+        <h3 class="text-center mb-4">Редактировать профиль</h3>
+        {% if is_client %}
+          <form id="edit-client-profile-form" method="post">
+            {% csrf_token %}
+            {{ client_form.as_p }}
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+          </form>
+        {% elif is_workshop %}
+          <form id="edit-workshop-profile-form" method="post">
+            {% csrf_token %}
+            <fieldset class="mb-4">
+              <legend>Детали профиля</legend>
+              {{ workshop_form.workshop_name|as_crispy_field }}
+              {{ workshop_form.workshop_address|as_crispy_field }}
+              {{ workshop_form.city|as_crispy_field }}
+              {{ workshop_form.email|as_crispy_field }}
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Сферы деятельности</legend>
+              <div class="row">
+                {% for category, areas in workshop_form.grouped_activity.items %}
+                  <div class="col-md-4 mb-3">
+                    <div class="card">
+                      <div class="card-header">
+                        <div class="form-check">
+                          <input type="checkbox" id="select_all_{{ category }}" class="select-all" data-category="{{ category }}">
+                          <label for="select_all_{{ category }}">{{ category }} <small>(выбрать все)</small></label>
+                        </div>
+                      </div>
+                      <div class="card-body">
+                        {% for area in areas %}
+                          <div class="form-check custom-checkbox">
+                            <input
+                              type="checkbox"
+                              name="activity_area"
+                              value="{{ area.pk }}"
+                              id="area_{{ area.pk }}"
+                              class="custom-control-input activity-area"
+                              data-category="{{ category }}"
+                              {% if area in workshop_form.initial.activity_area %}checked{% endif %}
+                            />
+                            <label for="area_{{ area.pk }}" class="custom-control-label">
+                              {{ area.name }}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </fieldset>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+          </form>
+        {% endif %}
+        <div id="edit-profile-message" class="error-message"></div>
       </div>
-    {% elif is_workshop %}
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Профиль бьюти-студии</h4>
-        </div>
-        <div class="card-body">
-          <p><strong>Название бьюти-студии:</strong> {{ workshop_profile.workshop_name }}</p>
-          <p><strong>Адрес:</strong> {{ workshop_profile.workshop_address }}</p>
-          <p><strong>Город:</strong> {{ workshop_profile.city|default:"Не указано" }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          <p><strong>Сферы деятельности:</strong></p>
-          {% if grouped_activities %}
-            {% for category, activities in grouped_activities.items %}
-              <h5>{{ category }}</h5>
-              <ul class="activity-list">
-                {% for activity in activities %}
-                  <li>{{ activity.name }}</li>
+    </div>
+
+    <!-- Секция: Редактирование цен -->
+    {% if is_workshop %}
+      <div id="edit-prices" class="content-section">
+        <div class="beauty-form">
+          <h3 class="text-center mb-4">Редактировать цены на услуги</h3>
+          {% if formset.errors or formset.non_form_errors %}
+            <div class="alert alert-danger p-2">
+              <ul class="errorlist">
+                {% for error in formset.non_form_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for form in formset %}
+                  {% for field, errors in form.errors.items %}
+                    <li>{{ field }}: {{ errors|join:", " }}</li>
+                  {% endfor %}
                 {% endfor %}
               </ul>
-            {% endfor %}
-          {% else %}
-            <p>Не указано</p>
+            </div>
           {% endif %}
+          <form method="post" id="service-price-form">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <div id="service-forms">
+              {% for form in formset %}
+                <div class="service-form row g-2 align-items-center" data-service-name="{{ form.instance.service_name|default:'' }}">
+                  <div class="col-md-3">{{ form.activity_area|as_crispy_field }}</div>
+                  <div class="col-md-3">{{ form.service_name|as_crispy_field }}</div>
+                  <div class="col-md-2">{{ form.price|as_crispy_field }}</div>
+                  <div class="col-md-2">{{ form.duration|as_crispy_field }}</div>
+                  <div class="col-md-2 text-center">
+                    <button type="button" class="remove-btn">Удалить</button>
+                  </div>
+                  {% if form.instance.pk %}
+                    {{ form.id }}
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            <button type="button" id="add-service-form" class="add-btn" title="Добавить услугу">+</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">💾 Сохранить</button>
+          </form>
+          <div id="edit-prices-message" class="error-message"></div>
         </div>
       </div>
-    {% else %}
-      <p class="text-center">Профиль не найден.</p>
+
+      <!-- Секция: Редактирование витрины -->
+      <div id="edit-showcase" class="content-section">
+        <div class="beauty-form">
+          <h3 class="text-center mb-4">Редактировать витрину</h3>
+          {% if showcase_form.errors or showcase_form.non_field_errors %}
+            <div class="alert alert-danger">
+              <ul class="errorlist">
+                {% for error in showcase_form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+                {% for field, errors in showcase_form.errors.items %}
+                  <li>{{ field }}: {{ errors|join:", " }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          <form method="post" id="edit-showcase-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="mb-4">
+              <legend>Обложка витрины</legend>
+              {{ showcase_form.cover_photo|as_crispy_field }}
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Информация о студии</legend>
+              {{ showcase_form.description|as_crispy_field }}
+              {{ showcase_form.phone|as_crispy_field }}
+              {{ showcase_form.working_hours|as_crispy_field }}
+            </fieldset>
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+          </form>
+          <div id="edit-showcase-message" class="error-message"></div>
+        </div>
+      </div>
     {% endif %}
   </div>
 </div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Просмотр изображения</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <img src="" alt="Увеличенное изображение" id="modalImage">
+        <p id="modalDescription"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Toggle content sections
+  const buttons = document.querySelectorAll('.sidebar a');
+  const sections = document.querySelectorAll('.content-section');
+
+  buttons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const sectionId = this.dataset.section;
+
+      // Remove active class from all buttons and sections
+      buttons.forEach(btn => btn.classList.remove('active'));
+      sections.forEach(section => section.classList.remove('active'));
+
+      // Add active class to clicked button and corresponding section
+      this.classList.add('active');
+      document.getElementById(sectionId).classList.add('active');
+    });
+  });
+
+  // Function to handle AJAX form submission
+  function submitForm(formId, messageDivId, successCallback) {
+    const form = document.getElementById(formId);
+    const messageDiv = document.getElementById(messageDivId);
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          messageDiv.innerHTML = '<div class="alert alert-success">Данные успешно сохранены!</div>';
+          if (successCallback) {
+            successCallback(data);
+          }
+          setTimeout(() => {
+            messageDiv.innerHTML = '';
+            // Switch back to profile details
+            buttons.forEach(btn => btn.classList.remove('active'));
+            sections.forEach(section => section.classList.remove('active'));
+            document.querySelector('.profile-btn[data-section="profile-details"]').classList.add('active');
+            document.getElementById('profile-details').classList.add('active');
+          }, 2000);
+        } else {
+          messageDiv.innerHTML = '<div class="alert alert-danger">' + (data.errors || 'Произошла ошибка.') + '</div>';
+        }
+      })
+      .catch(error => {
+        messageDiv.innerHTML = '<div class="alert alert-danger">Произошла ошибка: ' + error.message + '</div>';
+      });
+    });
+  }
+
+  // Edit Profile Form
+  {% if is_client %}
+    submitForm('edit-client-profile-form', 'edit-profile-message', function(data) {
+      // Update profile details
+      document.querySelector('#profile-details .card-body p:nth-child(1)').innerHTML = '<strong>Имя:</strong> ' + (data.name || '{{ user.username }}');
+      document.querySelector('#profile-details .card-body p:nth-child(2)').innerHTML = '<strong>Email:</strong> ' + data.email;
+      document.querySelector('#profile-details .card-body p:nth-child(3)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
+      document.querySelector('#profile-details .card-body p:nth-child(4)').innerHTML = '<strong>Город:</strong> ' + (data.city || 'Не указано');
+    });
+  {% elif is_workshop %}
+    submitForm('edit-workshop-profile-form', 'edit-profile-message', function(data) {
+      // Update profile details
+      document.querySelector('#profile-details .card-body p:nth-child(1)').innerHTML = '<strong>Название бьюти-студии:</strong> ' + data.workshop_name;
+      document.querySelector('#profile-details .card-body p:nth-child(2)').innerHTML = '<strong>Адрес:</strong> ' + data.workshop_address;
+      document.querySelector('#profile-details .card-body p:nth-child(3)').innerHTML = '<strong>Город:</strong> ' + (data.city || 'Не указано');
+      document.querySelector('#profile-details .card-body p:nth-child(4)').innerHTML = '<strong>Email:</strong> ' + data.email;
+      document.querySelector('#profile-details .card-body p:nth-child(5)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
+      document.querySelector('#profile-details .card-body p:nth-child(6)').innerHTML = '<strong>Описание:</strong> ' + (data.description || 'Не указано');
+      document.querySelector('#profile-details .card-body p:nth-child(7)').innerHTML = '<strong>Время работы:</strong> ' + (data.working_hours || 'Не uказано');
+      // Update activities
+      const activitiesContainer = document.querySelector('#profile-details .card-body .activity-list').parentElement;
+      activitiesContainer.innerHTML = '<p><strong>Сферы деятельности:</strong></p>' + data.activities_html;
+    });
+  {% endif %}
+
+  {% if is_workshop %}
+    // Edit Prices Form
+    submitForm('service-price-form', 'edit-prices-message', function(data) {
+      // Update prices in profile details
+      const pricesContainer = document.querySelector('#profile-details .card-body .price-table').parentElement;
+      pricesContainer.innerHTML = '<h4>Услуги и цены</h4>' + (data.prices_html || '<p>Цены на услуги не указаны.</p>');
+    });
+
+    // Edit Showcase Form
+    submitForm('edit-showcase-form', 'edit-showcase-message', function(data) {
+      // Update showcase details
+      document.querySelector('#profile-details .card-body p:nth-child(6)').innerHTML = '<strong>Описание:</strong> ' + (data.description || 'Не указано');
+      document.querySelector('#profile-details .card-body p:nth-child(5)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
+      document.querySelector('#profile-details .card-body p:nth-child(7)').innerHTML = '<strong>Время работы:</strong> ' + (data.working_hours || 'Не указано');
+    });
+
+    // Service Price Form JavaScript
+    const serviceMap = {{ service_map|safe }};
+    const activityCodes = {{ activity_codes|safe }};
+    const formContainer = document.getElementById('service-forms');
+    const addButton = document.getElementById('add-service-form');
+    const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+    const maxForms = {{ formset.max_num|default:100 }};
+    let formNum = parseInt(totalForms.value);
+
+    function updateServiceChoices(select, serviceSelect) {
+      const code = activityCodes[select.value] || '';
+      const services = serviceMap[code] || [];
+      serviceSelect.innerHTML = '<option value="">---------</option>';
+      services.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service;
+        option.text = service;
+        serviceSelect.appendChild(option);
+      });
+      const formDiv = select.closest('.service-form');
+      const selectedService = formDiv.dataset.serviceName || '';
+      if (selectedService && services.includes(selectedService)) {
+        serviceSelect.value = selectedService;
+      } else {
+        serviceSelect.value = '';
+      }
+    }
+
+    function updateFormIndices() {
+      const forms = Array.from(formContainer.querySelectorAll('.service-form'));
+      forms.forEach((form, index) => {
+        if (form.style.display === 'none') return;
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+          if (input.name) {
+            input.name = input.name.replace(/form-\d+-/, `form-${index}-`);
+            input.id = input.id.replace(/id_form-\d+-/, `id_form-${index}-`);
+          }
+        });
+      });
+      totalForms.value = forms.filter(form => form.style.display !== 'none').length;
+      formNum = parseInt(totalForms.value);
+    }
+
+    function removeForm(event) {
+      const formDiv = event.target.closest('.service-form');
+      const deleteCheckbox = formDiv.querySelector('input[name$="-DELETE"]');
+      if (deleteCheckbox) {
+        deleteCheckbox.checked = true;
+        formDiv.style.display = 'none';
+      } else {
+        formDiv.remove();
+      }
+      updateFormIndices();
+    }
+
+    function initializeForm(form) {
+      const select = form.querySelector('select[name$="activity_area"]');
+      const serviceSelect = form.querySelector('select[name$="service_name"]');
+      updateServiceChoices(select, serviceSelect);
+      select.addEventListener('change', () => {
+        updateServiceChoices(select, serviceSelect);
+        form.dataset.serviceName = '';
+      });
+      const removeBtn = form.querySelector('.remove-btn');
+      removeBtn.addEventListener('click', removeForm);
+    }
+
+    document.querySelectorAll('.service-form').forEach(initializeForm);
+
+    addButton.addEventListener('click', function() {
+      if (formNum >= maxForms) {
+        alert('Максимальное количество услуг: ' + maxForms);
+        return;
+      }
+      const templateForm = formContainer.querySelector('.service-form:last-child').cloneNode(true);
+      templateForm.querySelector('input[name$="-DELETE"]')?.remove();
+      templateForm.querySelector('input[name$="-id"]')?.remove();
+      templateForm.querySelector('input[name$="price"]').value = '';
+      templateForm.querySelector('input[name$="duration"]').value = '';
+      templateForm.querySelector('select[name$="service_name"]').innerHTML = '<option value="">---------</option>';
+      templateForm.dataset.serviceName = '';
+      formContainer.appendChild(templateForm);
+      updateFormIndices();
+      initializeForm(templateForm);
+    });
+
+    // Edit Workshop Profile JavaScript
+    document.querySelectorAll('.select-all').forEach(function(selectAll) {
+      selectAll.addEventListener('change', function() {
+        var category = this.dataset.category;
+        var checkboxes = document.querySelectorAll('.activity-area[data-category="' + category + '"]');
+        checkboxes.forEach(function(checkbox) {
+          checkbox.checked = selectAll.checked;
+        });
+      });
+    });
+
+    // Modal for gallery images in profile details
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        const imageUrl = this.dataset.image;
+        const description = this.dataset.description || 'Без описания';
+        document.getElementById('modalImage').src = imageUrl;
+        document.getElementById('modalDescription').textContent = description;
+      });
+    });
+  {% endif %}
+});
+</script>
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
