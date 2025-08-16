@@ -3,262 +3,405 @@
 
 {% block content %}
 <style>
-  /* Общий контейнер */
+  :root {
+    --primary-color: #00897b;
+    --secondary-color: #ff8a65;
+    --accent-color: #ba68c8;
+    --bg-light: #f5f7fa;
+    --text-dark: #1a202c;
+    --sidebar-bg: #2d3748;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
+  }
+
+  /* Reset and base styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  body {
+    background: var(--bg-light);
+    color: var(--text-dark);
+  }
+
+  /* Dashboard container */
   .dashboard-container {
     display: flex;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
-  /* Сайдбар */
+  /* Sidebar */
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 180px;
+    width: 240px;
     height: 100%;
-    background: #2f3b52;
-    padding: 15px 8px;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.08);
+    background: var(--sidebar-bg);
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    transition: var(--transition);
     z-index: 1000;
   }
+
   .sidebar a {
-    display: block;
-    padding: 8px 10px;
-    text-align: center;
-    border-radius: 6px;
-    font-size: 14px;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 15px;
     font-weight: 500;
     text-decoration: none;
-    transition: background 0.2s, transform 0.2s;
     color: white;
-    cursor: pointer;
-  }
-  .sidebar a.profile-btn {
-    background: #4db6ac;
-  }
-  .sidebar a.profile-btn:hover, .sidebar a.profile-btn.active {
-    background: #00897b;
-    transform: scale(1.02);
-  }
-  .sidebar a.prices-btn {
-    background: #ff8a65;
-  }
-  .sidebar a.prices-btn:hover, .sidebar a.prices-btn.active {
-    background: #f4511e;
-    transform: scale(1.02);
-  }
-  .sidebar a.showcase-btn {
-    background: #ba68c8;
-  }
-  .sidebar a.showcase-btn:hover, .sidebar a.showcase-btn.active {
-    background: #8e24aa;
-    transform: scale(1.02);
+    transition: var(--transition);
+    gap: 10px;
   }
 
-  /* Контент */
+  .sidebar a i {
+    font-size: 18px;
+  }
+
+  .sidebar a.profile-btn {
+    background: var(--primary-color);
+  }
+
+  .sidebar a.profile-btn:hover,
+  .sidebar a.profile-btn.active {
+    background: #00695c;
+    transform: translateX(5px);
+  }
+
+  .sidebar a.prices-btn {
+    background: var(--secondary-color);
+  }
+
+  .sidebar a.prices-btn:hover,
+  .sidebar a.prices-btn.active {
+    background: #f4511e;
+    transform: translateX(5px);
+  }
+
+  .sidebar a.showcase-btn {
+    background: var(--accent-color);
+  }
+
+  .sidebar a.showcase-btn:hover,
+  .sidebar a.showcase-btn.active {
+    background: #8e24aa;
+    transform: translateX(5px);
+  }
+
+  /* Content container */
   .profile-container {
     flex: 1;
-    margin-left: 200px;
-    background: linear-gradient(135deg, #ffffff, #fff3e0);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-    max-width: 900px;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-left: 240px;
+    padding: 30px;
+    width: calc(100% - 240px);
   }
+
+  .profile-container h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+    text-align: center;
+  }
+
+  /* Card styles */
   .card {
     border: none;
-    border-radius: 8px;
-    background: #fff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    background: white;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    margin-bottom: 20px;
+    width: 100%;
   }
+
   .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
   }
+
   .card-header {
-    background: #2e7d32;
-    color: #fff;
-    font-weight: 500;
-    border-radius: 8px 8px 0 0;
-    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+    padding: 15px 20px;
   }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  /* Activity list */
   .activity-list {
     list-style: none;
     padding: 0;
   }
+
+  .activity-list li {
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+  }
+
   .activity-list li::before {
     content: "\f00c";
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
-    color: #00897b;
-    margin-right: 8px;
+    color: var(--primary-color);
+    margin-right: 10px;
   }
+
+  /* Content sections */
   .content-section {
     display: none;
+    width: 100%;
   }
+
   .content-section.active {
     display: block;
+    animation: fadeIn 0.3s ease-in;
   }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Forms */
   .beauty-form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
   }
+
   .btn-primary {
-    background: #00897b;
+    background: var(--primary-color);
     border: none;
     border-radius: 8px;
-    padding: 12px;
-    transition: background 0.2s, transform 0.2s;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: var(--transition);
   }
+
   .btn-primary:hover {
     background: #00695c;
-    transform: scale(1.03);
+    transform: scale(1.05);
   }
-  .errorlist, .error-message {
-    color: #d32f2f;
+
+  .errorlist,
+  .error-message {
+    color: #e53e3e;
     font-size: 0.9rem;
     margin-bottom: 15px;
   }
-  /* Стили для edit_prices.html */
+
+  /* Service form */
   .service-form {
-    background: #f9f9f9;
+    background: #f7fafc;
     padding: 15px;
     border-radius: 8px;
-    border-left: 5px solid #00897b;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    border-left: 4px solid var(--primary-color);
     margin-bottom: 15px;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: var(--transition);
+    width: 100%;
   }
+
   .service-form:hover {
-    border-color: #bbb;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-sm);
   }
+
   .remove-btn {
-    background-color: #f8d7da;
-    color: #721c24;
+    background: #fed7d7;
+    color: #9b2c2c;
     border: none;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition);
   }
+
   .remove-btn:hover {
-    background-color: #f5c6cb;
-    color: #491217;
+    background: #feb2b2;
   }
+
   .add-btn {
-    background-color: #00897b;
+    background: var(--primary-color);
     color: white;
-    font-size: 1.4rem;
-    border: none;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 15px auto;
-    cursor: pointer;
-    transition: background 0.2s ease;
+    margin: 20px auto;
+    font-size: 1.5rem;
+    transition: var(--transition);
   }
+
   .add-btn:hover {
-    background-color: #00695c;
+    background: #00695c;
+    transform: scale(1.1);
   }
-  /* Стили для edit_workshop_profile.html */
+
+  /* Custom checkbox */
   .custom-checkbox .custom-control-input {
     display: none;
   }
+
   .custom-checkbox .custom-control-label::before {
     content: '';
     display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #00897b;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
     border-radius: 4px;
-    margin-right: 10px;
-    vertical-align: middle;
-    background-color: #fff;
-    transition: background-color 0.2s, border-color 0.2s;
+    margin-right: 12px;
+    background: white;
+    transition: var(--transition);
   }
+
   .custom-checkbox .custom-control-input:checked + .custom-control-label::before {
-    background-color: #00897b;
-    border-color: #00897b;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
   }
+
   .custom-checkbox .custom-control-input:checked + .custom-control-label::after {
     content: '\2713';
-    display: inline-block;
     position: absolute;
-    left: 6px;
-    top: 2px;
-    color: #fff;
-    font-size: 12px;
+    left: 7px;
+    top: 3px;
+    color: white;
+    font-size: 14px;
     font-weight: bold;
   }
-  .custom-checkbox .custom-control-label:hover::before {
-    border-color: #00695c;
-  }
-  /* Стили для edit_showcase.html */
+
+  /* Showcase form */
   .upload-form {
-    background: linear-gradient(135deg, #ede7f6, #fce4ec);
+    background: white;
     padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
   }
+
   .upload-form label {
     font-weight: 500;
-    color: #424242;
+    color: var(--text-dark);
   }
-  .upload-form input[type="file"], .upload-form textarea {
+
+  .upload-form input[type="file"],
+  .upload-form textarea {
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    border: 1px solid #ce93d8;
     padding: 10px;
+    width: 100%;
   }
+
   .upload-form textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 100px;
   }
-  /* Стили для галереи в профиле */
-  .gallery-item img {
+
+  /* Price table */
+  .price-table {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    cursor: pointer;
+    border-collapse: collapse;
   }
-  .gallery-item p {
-    margin: 10px 0;
-    font-size: 0.9rem;
+
+  .price-table th,
+  .price-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .price-table th {
+    background: #edf2f7;
+    font-weight: 600;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 80px;
+      padding: 10px;
+    }
+
+    .sidebar a {
+      font-size: 0;
+      justify-content: center;
+    }
+
+    .sidebar a i {
+      font-size: 20px;
+    }
+
+    .profile-container {
+      margin-left: 80px;
+      width: calc(100% - 80px);
+      padding: 20px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .sidebar {
+      width: 100%;
+      height: auto;
+      flex-direction: row;
+      justify-content: center;
+      padding: 10px;
+      position: sticky;
+      top: 0;
+    }
+
+    .profile-container {
+      margin-left: 0;
+      width: 100%;
+      margin-top: 80px;
+      padding: 15px;
+    }
+
+    .service-form .col-md-3,
+    .service-form .col-md-2 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
   }
 </style>
 
 <div class="dashboard-container">
-  <!-- Сайдбар -->
+  <!-- Sidebar -->
   <div class="sidebar">
-    <a href="#" class="profile-btn active" data-section="profile-details">Профиль</a>
-    <a href="#" class="profile-btn" data-section="edit-profile">Редактировать профиль</a>
+    <a href="#" class="profile-btn active" data-section="profile-details"><i class="fas fa-user"></i> Профиль</a>
+    <a href="#" class="profile-btn" data-section="edit-profile"><i class="fas fa-edit"></i> Редактировать профиль</a>
     {% if is_workshop %}
-      <a href="#" class="prices-btn" data-section="edit-prices">Редактировать цены</a>
-      <a href="#" class="showcase-btn" data-section="edit-showcase">Редактировать витрину</a>
+      <a href="#" class="prices-btn" data-section="edit-prices"><i class="fas fa-dollar-sign"></i> Редактировать цены</a>
+      <a href="#" class="showcase-btn" data-section="edit-showcase"><i class="fas fa-store"></i> Редактировать витрину</a>
     {% endif %}
   </div>
 
-  <!-- Контент -->
+  <!-- Content -->
   <div class="profile-container">
-    <h2 class="text-center mb-4">Личный кабинет</h2>
+    <h2>Личный кабинет</h2>
 
-    <!-- Секция: Профиль -->
+    <!-- Profile Section -->
     <div id="profile-details" class="content-section active">
       {% if is_client %}
-        <div class="card mb-4">
+        <div class="card">
           <div class="card-header">
             <h4>Профиль клиента</h4>
           </div>
@@ -270,7 +413,7 @@
           </div>
         </div>
       {% elif is_workshop %}
-        <div class="card mb-4">
+        <div class="card">
           <div class="card-header">
             <h4>Профиль бьюти-студии</h4>
           </div>
@@ -299,7 +442,7 @@
             {% if workshop_profile.service_prices.exists %}
               {% for category, prices in grouped_prices.items %}
                 <h5>{{ category }}</h5>
-                <table class="table price-table">
+                <table class="price-table">
                   <thead>
                     <tr>
                       <th>Услуга</th>
@@ -321,19 +464,6 @@
             {% else %}
               <p>Цены на услуги не указаны.</p>
             {% endif %}
-            {% if gallery %}
-              <h4 class="mt-4">Галерея работ</h4>
-              <div class="row mt-3">
-                {% for image in gallery %}
-                  <div class="col-md-4 gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ image.image.url }}" data-description="{{ image.description|default:'Без описания' }}">
-                    <img src="{{ image.image.url }}" alt="{{ image.description|default:'Работа' }}">
-                    <p>{{ image.description|default:"Без описания" }}</p>
-                  </div>
-                {% endfor %}
-              </div>
-            {% else %}
-              <p class="text-center">Галерея пуста.</p>
-            {% endif %}
           </div>
         </div>
       {% else %}
@@ -341,7 +471,7 @@
       {% endif %}
     </div>
 
-    <!-- Секция: Редактирование профиля -->
+    <!-- Edit Profile Section -->
     <div id="edit-profile" class="content-section">
       <div class="beauty-form">
         <h3 class="text-center mb-4">Редактировать профиль</h3>
@@ -349,7 +479,7 @@
           <form id="edit-client-profile-form" method="post">
             {% csrf_token %}
             {{ client_form.as_p }}
-            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Сохранить</button>
           </form>
         {% elif is_workshop %}
           <form id="edit-workshop-profile-form" method="post">
@@ -396,14 +526,14 @@
                 {% endfor %}
               </div>
             </fieldset>
-            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Сохранить</button>
           </form>
         {% endif %}
         <div id="edit-profile-message" class="error-message"></div>
       </div>
     </div>
 
-    <!-- Секция: Редактирование цен -->
+    <!-- Edit Prices Section -->
     {% if is_workshop %}
       <div id="edit-prices" class="content-section">
         <div class="beauty-form">
@@ -448,7 +578,7 @@
         </div>
       </div>
 
-      <!-- Секция: Редактирование витрины -->
+      <!-- Edit Showcase Section -->
       <div id="edit-showcase" class="content-section">
         <div class="beauty-form">
           <h3 class="text-center mb-4">Редактировать витрину</h3>
@@ -476,27 +606,12 @@
               {{ showcase_form.phone|as_crispy_field }}
               {{ showcase_form.working_hours|as_crispy_field }}
             </fieldset>
-            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">Сохранить</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Сохранить</button>
           </form>
           <div id="edit-showcase-message" class="error-message"></div>
         </div>
       </div>
     {% endif %}
-  </div>
-</div>
-
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="imageModalLabel">Просмотр изображения</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <img src="" alt="Увеличенное изображение" id="modalImage">
-        <p id="modalDescription"></p>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -511,34 +626,33 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const sectionId = this.dataset.section;
 
-      // Remove active class from all buttons and sections
       buttons.forEach(btn => btn.classList.remove('active'));
       sections.forEach(section => section.classList.remove('active'));
 
-      // Add active class to clicked button and corresponding section
       this.classList.add('active');
       document.getElementById(sectionId).classList.add('active');
     });
   });
 
-  // Function to handle AJAX form submission
+  // AJAX form submission
   function submitForm(formId, messageDivId, successCallback) {
     const form = document.getElementById(formId);
     const messageDiv = document.getElementById(messageDivId);
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(form);
 
-      fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+          }
+        });
+        const data = await response.json();
+
         if (data.success) {
           messageDiv.innerHTML = '<div class="alert alert-success">Данные успешно сохранены!</div>';
           if (successCallback) {
@@ -546,7 +660,6 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           setTimeout(() => {
             messageDiv.innerHTML = '';
-            // Switch back to profile details
             buttons.forEach(btn => btn.classList.remove('active'));
             sections.forEach(section => section.classList.remove('active'));
             document.querySelector('.profile-btn[data-section="profile-details"]').classList.add('active');
@@ -555,17 +668,15 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           messageDiv.innerHTML = '<div class="alert alert-danger">' + (data.errors || 'Произошла ошибка.') + '</div>';
         }
-      })
-      .catch(error => {
+      } catch (error) {
         messageDiv.innerHTML = '<div class="alert alert-danger">Произошла ошибка: ' + error.message + '</div>';
-      });
+      }
     });
   }
 
   // Edit Profile Form
   {% if is_client %}
     submitForm('edit-client-profile-form', 'edit-profile-message', function(data) {
-      // Update profile details
       document.querySelector('#profile-details .card-body p:nth-child(1)').innerHTML = '<strong>Имя:</strong> ' + (data.name || '{{ user.username }}');
       document.querySelector('#profile-details .card-body p:nth-child(2)').innerHTML = '<strong>Email:</strong> ' + data.email;
       document.querySelector('#profile-details .card-body p:nth-child(3)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
@@ -573,15 +684,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   {% elif is_workshop %}
     submitForm('edit-workshop-profile-form', 'edit-profile-message', function(data) {
-      // Update profile details
       document.querySelector('#profile-details .card-body p:nth-child(1)').innerHTML = '<strong>Название бьюти-студии:</strong> ' + data.workshop_name;
       document.querySelector('#profile-details .card-body p:nth-child(2)').innerHTML = '<strong>Адрес:</strong> ' + data.workshop_address;
       document.querySelector('#profile-details .card-body p:nth-child(3)').innerHTML = '<strong>Город:</strong> ' + (data.city || 'Не указано');
       document.querySelector('#profile-details .card-body p:nth-child(4)').innerHTML = '<strong>Email:</strong> ' + data.email;
       document.querySelector('#profile-details .card-body p:nth-child(5)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
       document.querySelector('#profile-details .card-body p:nth-child(6)').innerHTML = '<strong>Описание:</strong> ' + (data.description || 'Не указано');
-      document.querySelector('#profile-details .card-body p:nth-child(7)').innerHTML = '<strong>Время работы:</strong> ' + (data.working_hours || 'Не uказано');
-      // Update activities
+      document.querySelector('#profile-details .card-body p:nth-child(7)').innerHTML = '<strong>Время работы:</strong> ' + (data.working_hours || 'Не указано');
       const activitiesContainer = document.querySelector('#profile-details .card-body .activity-list').parentElement;
       activitiesContainer.innerHTML = '<p><strong>Сферы деятельности:</strong></p>' + data.activities_html;
     });
@@ -590,14 +699,12 @@ document.addEventListener('DOMContentLoaded', function() {
   {% if is_workshop %}
     // Edit Prices Form
     submitForm('service-price-form', 'edit-prices-message', function(data) {
-      // Update prices in profile details
       const pricesContainer = document.querySelector('#profile-details .card-body .price-table').parentElement;
       pricesContainer.innerHTML = '<h4>Услуги и цены</h4>' + (data.prices_html || '<p>Цены на услуги не указаны.</p>');
     });
 
     // Edit Showcase Form
     submitForm('edit-showcase-form', 'edit-showcase-message', function(data) {
-      // Update showcase details
       document.querySelector('#profile-details .card-body p:nth-child(6)').innerHTML = '<strong>Описание:</strong> ' + (data.description || 'Не указано');
       document.querySelector('#profile-details .card-body p:nth-child(5)').innerHTML = '<strong>Телефон:</strong> ' + data.phone;
       document.querySelector('#profile-details .card-body p:nth-child(7)').innerHTML = '<strong>Время работы:</strong> ' + (data.working_hours || 'Не указано');
@@ -692,21 +799,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Edit Workshop Profile JavaScript
     document.querySelectorAll('.select-all').forEach(function(selectAll) {
       selectAll.addEventListener('change', function() {
-        var category = this.dataset.category;
-        var checkboxes = document.querySelectorAll('.activity-area[data-category="' + category + '"]');
-        checkboxes.forEach(function(checkbox) {
+        const category = this.dataset.category;
+        const checkboxes = document.querySelectorAll('.activity-area[data-category="' + category + '"]');
+        checkboxes.forEach(checkbox => {
           checkbox.checked = selectAll.checked;
         });
-      });
-    });
-
-    // Modal for gallery images in profile details
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      item.addEventListener('click', function(e) {
-        const imageUrl = this.dataset.image;
-        const description = this.dataset.description || 'Без описания';
-        document.getElementById('modalImage').src = imageUrl;
-        document.getElementById('modalDescription').textContent = description;
       });
     });
   {% endif %}
