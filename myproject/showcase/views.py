@@ -8,16 +8,19 @@ from .models import Showcase, GalleryImage
 from .forms import ShowcaseForm, GalleryImageForm
 from collections import OrderedDict
 import logging
+import os
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 @login_required
 def edit_showcase(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     try:
         workshop = request.user.workshopprofile
     except WorkshopProfile.DoesNotExist:
         logger.error(f"WorkshopProfile не найден для пользователя {request.user.username}")
-        if request.is_ajax():
+        if is_ajax:
             return JsonResponse({'success': False, 'errors': 'Workshop profile not found.'}, status=400)
         return redirect('accounts:profile')
 
@@ -28,50 +31,66 @@ def edit_showcase(request):
             logger.info(f"Форма валидна для пользователя {request.user.username}")
             form.save()
             logger.info(f"Витрина успешно сохранена для пользователя {request.user.username}")
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponse({
                     'success': True,
-                    'description': workshop.description,
-                    'phone': workshop.phone,
-                    'working_hours': workshop.working_hours
+                    'description': form.cleaned_data['description'] or '',
+                    'phone': form.cleaned_data['phone'] or '',
+                    'working_hours': form.cleaned_data['working_hours'] or ''
                 })
             return redirect('showcase:view_showcase', username=request.user.username)
         else:
-            logger.error(f"Ошибки формы: {form.errors}")
-            if request.is_ajax():
+            logger.error(f"Ошибки формы в edit_showcase: {form.errors}")
+            if is_ajax:
                 return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
-    return redirect('accounts:profile')
+            return render(request, 'accounts/profile.html', {
+                'showcase_form': form,
+                'workshop_profile': workshop,
+                'is_workshop': True,
+                'user': request.user
+            })
+    else:
+        return redirect('accounts:profile')
 
 @login_required
 def upload_gallery_image(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     try:
         workshop = request.user.workshopprofile
         showcase = workshop.showcase
     except (WorkshopProfile.DoesNotExist, Showcase.DoesNotExist):
-        if request.is_ajax():
+        logger.error(f"Workshop или showcase не найден для пользователя {request.user.username}")
+        if is_ajax:
             return JsonResponse({'success': False, 'errors': 'Workshop or showcase not found.'}, status=400)
         return redirect('accounts:profile')
 
     if request.method == 'POST':
         upload_form = GalleryImageForm(request.POST, request.FILES)
-        if upload_form.is_valid():
+        if form.is_valid():
             gallery_image = upload_form.save(commit=False)
             gallery_image.showcase = showcase
             gallery_image.save()
             logger.info(f"Изображение галереи успешно загружено для пользователя {request.user.username}")
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponse({
                     'success': True,
                     'image_url': gallery_image.image.url,
-                    'description': gallery_image.description,
+                    'description': gallery_image.description or '',
                     'image_id': gallery_image.id
                 })
             return redirect('showcase:view_showcase', username=request.user.username)
         else:
             logger.error(f"Ошибки формы загрузки изображения: {upload_form.errors}")
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponse({'success': False, 'errors': upload_form.errors.as_json()}, status=400)
-    return redirect('accounts:profile')
+            return render(request, 'accounts/profile.html', {
+                'upload_form': upload_form,
+                'workshop_profile': workshop,
+                'is_workshop': True,
+                'user': request.user
+            })
+    else:
+        return redirect('accounts:profile')
 
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
@@ -123,17 +142,33 @@ def view_showcase(request, username):
         'upload_form': upload_form
     })
 
+
 @login_required
 @require_POST
 def delete_image(request, image_id):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     try:
         image = get_object_or_404(GalleryImage, id=image_id)
-        if image.showcase.workshop.user == request.user:
-            image.delete()
-            logger.info(f"Изображение {image_id} удалено пользователем {request.user.username}")
+        if image.showcase.workshop.user != request.user:
+            logger.warning(f"Попытка удаления изображения {image_id} неавторизованным пользователем {request.user.username}")
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Вы не авторизованы для удаления этого изображения'}, status=403)
+            return redirect('showcase:view_showcase', username=image.showcase.workshop.user.username)
+
+        # Удаляем изображение и связанный файл
+        image_file = image.image.path
+        image.delete()
+        import os
+        if os.path.exists(image_file):
+            os.remove(image_file)
+            logger.info(f"Файл изображения {image_file} удалён с диска")
+        logger.info(f"Изображение {image_id} успешно удалено пользователем {request.user.username}")
+
+        if is_ajax:
             return JsonResponse({'success': True})
-        logger.warning(f"Попытка удаления изображения {image_id} неавторизованным пользователем {request.user.username}")
-        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+        return redirect('showcase:view_showcase', username=request.user.username)
     except Exception as e:
         logger.error(f"Ошибка при удалении изображения {image_id}: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': f'Ошибка сервера: {str(e)}'}, status=500)
+        return redirect('accounts:profile')

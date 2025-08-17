@@ -184,10 +184,19 @@
     background: #f5f5f5;
     font-weight: 600;
   }
-  .error-message {
-    color: #d32f2f;
+  .error-message, .success-message {
     font-size: 0.9rem;
     margin-top: 10px;
+    padding: 10px;
+    border-radius: 6px;
+  }
+  .error-message {
+    color: #d32f2f;
+    background: #ffcdd2;
+  }
+  .success-message {
+    color: #2e7d32;
+    background: #c8e6c9;
   }
   @media (max-width: 768px) {
     .gallery-item {
@@ -256,6 +265,7 @@
         {% endif %}
 
         <h4>Галерея работ</h4>
+        <div id="gallery-message" class="message-container"></div>
         {% if is_owner %}
           <form method="post" enctype="multipart/form-data" class="upload-form">
             {% csrf_token %}
@@ -383,42 +393,30 @@ document.addEventListener('DOMContentLoaded', function() {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
       const imageId = this.dataset.imageId;
+      const messageContainer = document.getElementById('gallery-message');
       if (confirm('Вы уверены, что хотите удалить это изображение?')) {
         fetch(`/showcase/delete_image/${imageId}/`, {
           method: 'POST',
           headers: {
             'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json'
           }
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            const parentItem = this.closest('.gallery-item');
-            const parentSlide = parentItem.closest('.carousel-item');
-            parentItem.remove();
-            if (parentSlide.querySelectorAll('.gallery-item').length === 0) {
-              parentSlide.remove();
-            }
-            const slides = document.querySelectorAll('.carousel-item');
-            const galleryItems = document.querySelectorAll('.gallery-item');
-            if (galleryItems.length === 0) {
-              document.querySelector('.carousel-container').outerHTML = '<p class="text-center">Галерея пуста.</p>';
-            } else if (slides.length > 0 && !document.querySelector('.carousel-item.active')) {
-              const firstSlide = document.querySelector('.carousel-item');
-              if (firstSlide) firstSlide.classList.add('active');
-            }
-            if (galleryItems.length <= 3) {
-              const controls = document.querySelectorAll('.carousel-control-prev, .carousel-control-next');
-              controls.forEach(control => control.remove());
-            }
+            messageContainer.innerHTML = '<div class="success-message">Изображение успешно удалено!</div>';
+            setTimeout(() => {
+              location.reload(); // Перезагрузка страницы
+            }, 1000);
           } else {
-            alert('Ошибка при удалении изображения: ' + (data.error || 'Неизвестная ошибка'));
+            messageContainer.innerHTML = `<div class="error-message">Ошибка при удалении изображения: ${data.error || 'Неизвестная ошибка'}</div>`;
           }
         })
         .catch(error => {
-          console.error('Error:', error);
-          alert('Произошла ошибка при удалении.');
+          console.error('Ошибка:', error);
+          messageContainer.innerHTML = `<div class="error-message">Произошла ошибка при удалении: ${error.message}</div>`;
         });
       }
     });

@@ -1,4 +1,3 @@
-# accounts/views.py
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
@@ -112,12 +111,16 @@ def profile_view(request):
             is_workshop = True
             workshop_form = WorkshopProfileForm(instance=workshop_profile, initial={'email': request.user.email})
             json_path = finders.find('services.json')
-            if json_path:
+            if not json_path:
+                logger.error("Файл services.json не найден")
+                return JsonResponse({'success': False, 'errors': 'Service list not found.'}, status=500) if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else redirect('accounts:profile')
+            try:
                 with open(json_path, 'r', encoding='utf-8') as f:
                     services_data = json.load(f)
                 service_map = {item['code']: item['works'] for item in services_data}
-            else:
-                service_map = {}
+            except json.JSONDecodeError as e:
+                logger.error(f"Ошибка декодирования services.json: {str(e)}")
+                return JsonResponse({'success': False, 'errors': 'Invalid services.json format.'}, status=500) if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else redirect('accounts:profile')
             activity_codes = {str(area.id): area.code for area in workshop_profile.activity_area.all()}
             formset = ServicePriceFormSet(
                 queryset=ServicePrice.objects.filter(workshop=workshop_profile),
@@ -141,12 +144,10 @@ def profile_view(request):
             for activity in workshop_profile.activity_area.all():
                 cat = CATEGORY_TRANSLATIONS.get(activity.category, activity.get_category_display())
                 grouped_activities.setdefault(cat, []).append(activity)
-            # Prices for display
             prices = ServicePrice.objects.filter(workshop=workshop_profile)
             for price in prices:
                 cat = CATEGORY_TRANSLATIONS.get(price.activity_area.category, price.activity_area.get_category_display())
                 grouped_prices.setdefault(cat, []).append(price)
-            # Showcase form
             showcase, created = Showcase.objects.get_or_create(workshop=workshop_profile)
             showcase_form = ShowcaseForm(instance=showcase)
             upload_form = GalleryImageForm()
@@ -176,6 +177,7 @@ def profile_view(request):
 @login_required
 def edit_profile(request):
     user = request.user
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if request.method == 'POST':
         try:
             client_profile = user.clientprofile
@@ -184,94 +186,120 @@ def edit_profile(request):
                 client_profile = form.save()
                 user.email = form.cleaned_data['email']
                 user.save()
-                if request.is_ajax():
+                if is_ajax:
                     return JsonResponse({
                         'success': True,
                         'name': client_profile.name,
                         'email': user.email,
                         'phone': client_profile.phone,
-                        'city': client_profile.city
+                        'city': client_profile.city or ''
                     })
                 return redirect('accounts:profile')
             else:
-                if request.is_ajax():
+                logger.error(f"Ошибки формы в edit_profile (client): {form.errors}")
+                if is_ajax:
                     return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+                return render(request, 'accounts/profile.html', {
+                    'client_form': form,
+                    'is_client': True,
+                    'user': user
+                })
         except ClientProfile.DoesNotExist:
-            pass
-
-        try:
-            workshop_profile = user.workshopprofile
-            form = WorkshopProfileForm(request.POST, instance=workshop_profile)
-            if form.is_valid():
-                workshop_profile = form.save(commit=False)
-                user.email = form.cleaned_data['email']
-                user.save()
-                workshop_profile.save()
-                form.save_m2m()
-                if request.is_ajax():
-                    # Render activities HTML
-                    CATEGORY_TRANSLATIONS = {
-                        'hair': 'Уход за волосами',
-                        'nails': 'Ногтевой сервис',
-                        'cosmetology': 'Косметология',
-                        'makeup': 'Макияж',
-                        'brows_lashes': 'Уход за бровями и ресницами',
-                        'epilation': 'Эпиляция и депиляция',
-                        'body': 'Массаж и уход за телом',
-                        'tattoo_piercing': 'Тату и пирсинг',
-                        'styling': 'Стилистика и имидж',
-                        'kids': 'Детская бьюти-сфера',
-                        'alternative': 'Альтернативные направления',
-                        'education': 'Обучение и менторство'
-                    }
-                    grouped_activities = OrderedDict()
-                    for activity in workshop_profile.activity_area.all():
-                        cat = CATEGORY_TRANSLATIONS.get(activity.category, activity.get_category_display())
-                        grouped_activities.setdefault(cat, []).append(activity)
-                    activities_html = ''
-                    for category, activities in grouped_activities.items():
-                        activities_html += f'<h5>{category}</h5><ul class="activity-list">'
-                        for activity in activities:
-                            activities_html += f'<li>{activity.name}</li>'
-                        activities_html += '</ul>'
-                    return JsonResponse({
-                        'success': True,
-                        'workshop_name': workshop_profile.workshop_name,
-                        'workshop_address': workshop_profile.workshop_address,
-                        'city': workshop_profile.city,
-                        'email': user.email,
-                        'phone': workshop_profile.phone,
-                        'description': workshop_profile.description,
-                        'working_hours': workshop_profile.working_hours,
-                        'activities_html': activities_html
+            try:
+                workshop_profile = user.workshopprofile
+                form = WorkshopProfileForm(request.POST, instance=workshop_profile)
+                if form.is_valid():
+                    workshop_profile = form.save(commit=False)
+                    user.email = form.cleaned_data['email']
+                    user.save()
+                    workshop_profile.save()
+                    form.save_m2m()
+                    if is_ajax:
+                        CATEGORY_TRANSLATIONS = {
+                            'hair': 'Уход за волосами',
+                            'nails': 'Ногтевой сервис',
+                            'cosmetology': 'Косметология',
+                            'makeup': 'Макияж',
+                            'brows_lashes': 'Уход за бровями и ресницами',
+                            'epilation': 'Эпиляция и депиляция',
+                            'body': 'Массаж и уход за телом',
+                            'tattoo_piercing': 'Тату и пирсинг',
+                            'styling': 'Стилистика и имидж',
+                            'kids': 'Детская бьюти-сфера',
+                            'alternative': 'Альтернативные направления',
+                            'education': 'Обучение и менторство'
+                        }
+                        grouped_activities = OrderedDict()
+                        for activity in workshop_profile.activity_area.all():
+                            cat = CATEGORY_TRANSLATIONS.get(activity.category, activity.get_category_display())
+                            grouped_activities.setdefault(cat, []).append(activity)
+                        activities_html = ''
+                        for category, activities in grouped_activities.items():
+                            activities_html += f'<h5>{category}</h5><ul class="activity-list">'
+                            for activity in activities:
+                                activities_html += f'<li>{activity.name}</li>'
+                            activities_html += '</ul>'
+                        return JsonResponse({
+                            'success': True,
+                            'workshop_name': workshop_profile.workshop_name,
+                            'workshop_address': workshop_profile.workshop_address,
+                            'city': workshop_profile.city or '',
+                            'email': user.email,
+                            'phone': workshop_profile.phone,
+                            'description': workshop_profile.description or '',
+                            'working_hours': workshop_profile.working_hours or '',
+                            'activities_html': activities_html
+                        })
+                    return redirect('accounts:profile')
+                else:
+                    logger.error(f"Ошибки формы в edit_profile (workshop): {form.errors}")
+                    if is_ajax:
+                        return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+                    return render(request, 'accounts/profile.html', {
+                        'workshop_form': form,
+                        'is_workshop': True,
+                        'user': user,
+                        'grouped_activities': grouped_activities
                     })
-                return redirect('accounts:profile')
-            else:
-                if request.is_ajax():
-                    return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
-        except WorkshopProfile.DoesNotExist:
-            pass
-
-        return redirect('main:home')
+            except WorkshopProfile.DoesNotExist:
+                logger.error(f"Профиль не найден для пользователя {user.username}")
+                if is_ajax:
+                    return JsonResponse({'success': False, 'errors': 'Profile not found.'}, status=400)
+                return redirect('main:home')
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка в edit_profile: {str(e)}")
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': str(e)}, status=500)
+            return redirect('main:home')
     else:
         return redirect('accounts:profile')
 
 @login_required
 def edit_prices(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     try:
         workshop = request.user.workshopprofile
     except WorkshopProfile.DoesNotExist:
-        if request.is_ajax():
+        logger.error(f"WorkshopProfile не найден для пользователя {request.user.username}")
+        if is_ajax:
             return JsonResponse({'success': False, 'errors': 'Workshop profile not found.'}, status=400)
         return redirect('accounts:profile')
 
-    json_path = finders.find('services.json')
-    if json_path:
+    try:
+        json_path = finders.find('services.json')
+        if not json_path:
+            logger.error("Файл services.json не найден")
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': 'Service list not found.'}, status=500)
+            return redirect('accounts:profile')
         with open(json_path, 'r', encoding='utf-8') as f:
             services_data = json.load(f)
         service_map = {item['code']: item['works'] for item in services_data}
-    else:
-        service_map = {}
+    except json.JSONDecodeError as e:
+        logger.error(f"Ошибка декодирования services.json: {str(e)}")
+        if is_ajax:
+            return JsonResponse({'success': False, 'errors': 'Invalid services.json format.'}, status=500)
+        return redirect('accounts:profile')
 
     activity_codes = {str(area.id): area.code for area in workshop.activity_area.all()}
 
@@ -288,8 +316,7 @@ def edit_prices(request):
                 instance.save()
             for instance in formset.deleted_objects:
                 instance.delete()
-            if request.is_ajax():
-                # Render prices HTML
+            if is_ajax:
                 prices = ServicePrice.objects.filter(workshop=workshop)
                 grouped_prices = OrderedDict()
                 CATEGORY_TRANSLATIONS = {
@@ -311,7 +338,7 @@ def edit_prices(request):
                     grouped_prices.setdefault(cat, []).append(price)
                 prices_html = ''
                 for category, prices in grouped_prices.items():
-                    prices_html += f'<h5>{category}</h5><table class="table price-table"><thead><tr><th>Услуга</th><th>Цена (руб.)</th><th>Длительность</th></tr></thead><tbody>'
+                    prices_html += f'<h5>{category}</h5><table class="price-table"><thead><tr><th>Услуга</th><th>Цена (руб.)</th><th>Длительность</th></tr></thead><tbody>'
                     for price in prices:
                         prices_html += f'<tr><td>{price.service_name}</td><td>{price.price}</td><td>{price.duration or "Не указано"}</td></tr>'
                     prices_html += '</tbody></table>'
@@ -321,13 +348,16 @@ def edit_prices(request):
                 })
             return redirect('accounts:profile')
         else:
-            if request.is_ajax():
-                return JsonResponse({'success': False, 'errors': formset.errors}, status=400)
-            return render(request, 'accounts/edit_prices.html', {
+            logger.error(f"Ошибки формсета в edit_prices: {formset.errors}, {formset.non_form_errors}")
+            if is_ajax:
+                return JsonResponse({'success': False, 'errors': formset.errors.as_json()}, status=400)
+            return render(request, 'accounts/profile.html', {
                 'formset': formset,
                 'service_map': service_map,
                 'activity_codes': activity_codes,
-                'workshop': workshop
+                'workshop_profile': workshop,
+                'is_workshop': True,
+                'user': request.user
             })
     else:
         return redirect('accounts:profile')
