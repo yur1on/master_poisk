@@ -1,77 +1,471 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static format_duration %}
 {% block title %}Витрина {{ workshop.workshop_name }}{% endblock %}
 {% block content %}
 <style>
-  body {
-    background: #f5f5f5;
-    font-family: 'Roboto', sans-serif;
-  }
-  .showcase-container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 15px;
-  }
-  .showcase-header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-  .showcase-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #212121;
-    margin-bottom: 10px;
-  }
-  .banner-img {
-    width: 100%;
-    max-height: 450px;
-    object-fit: cover;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-  }
-  .content-card, .sidebar-card {
-    border: none;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 25px;
-    margin-bottom: 30px;
-  }
-  .content-card h4, .sidebar-card h4 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #3f51b5;
-    margin-bottom: 15px;
-  }
-  .content-card p, .sidebar-card p {
-    color: #424242;
-    line-height: 1.6;
-  }
-  .description-text {
-    white-space: pre-wrap;
-  }
-  .highlight-phone {
-    background: linear-gradient(135deg, #ce93d8, #f06292, #5c6bc0);
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.2rem;
-    padding: 12px 20px;
-    border-radius: 8px;
-    display: inline-block;
-    margin: 15px 0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    transition: transform 0.2s;
-  }
-  .highlight-phone:hover {
-    transform: scale(1.05);
-  }
-  .map-container {
+
+:root {
+  --primary: #00897b;
+  --primary-light: #26a69a;
+  --primary-dark: #00695c;
+  --secondary: #ff8a65;
+  --accent: #ba68c8;
+  --surface: #ffffff;
+  --background: #f8fafc;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+}
+
+.showcase-container {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.showcase-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.showcase-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.showcase-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  border-radius: 2px;
+}
+
+.banner-container {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 400px;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--transition);
+}
+
+.banner-container:hover .banner-img {
+  transform: scale(1.03);
+}
+
+.banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 1.5rem;
+  color: white;
+}
+
+.banner-overlay h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.content-section {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  transition: var(--transition);
+}
+
+.content-section:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title i {
+  color: var(--primary);
+}
+
+.description-text {
+  white-space: pre-wrap;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem;
+  background: #f1f5f9;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.contact-item:hover {
+  background: #e2e8f0;
+  transform: translateX(5px);
+}
+
+.contact-icon {
+  background: var(--primary);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.highlight-phone {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 137, 123, 0.2);
+  transition: var(--transition);
+  width: 100%;
+  justify-content: center;
+}
+
+.highlight-phone:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 137, 123, 0.3);
+}
+
+.highlight-phone i {
+  font-size: 1.2rem;
+}
+
+.services-container {
+  margin-top: 1.5rem;
+}
+
+.service-category {
+  margin-bottom: 1.5rem;
+}
+
+.category-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.service-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.service-card {
+  background: #f5ef3b22;
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  transition: var(--transition);
+  border: 1px solid var(--border);
+}
+
+.service-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 8px rgba(0, 137, 123, 0.1);
+  transform: translateY(-2px);
+}
+
+.service-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.service-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.service-duration {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.service-price {
+  font-weight: 700;
+  color: var(--primary-dark);
+  font-size: 1.1rem;
+}
+
+.map-container {
+  height: 300px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  background: #e2e8f0;
+}
+
+.map-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+}
+
+.owner-actions {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  margin-top: 1.5rem;
+}
+
+.btn-edit-showcase {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.8rem 2rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+  box-shadow: 0 4px 6px rgba(0, 137, 123, 0.2);
+}
+
+.btn-edit-showcase:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(0, 137, 123, 0.3);
+}
+
+.message-container {
+  margin-top: 1rem;
+}
+
+.success-message {
+  background: #dcfce7;
+  color: #166534;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid #16a34a;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid #ef4444;
+}
+
+.upload-form {
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: white;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.2);
+}
+
+.modal-content {
+  border-radius: var(--radius-lg);
+  border: none;
+  overflow: hidden;
+}
+
+.modal-body {
+  padding: 0;
+}
+
+.modal-image {
+  width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+.modal-description {
+  padding: 1.5rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .banner-container {
     height: 350px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+
+  .service-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .banner-container {
+    height: 300px;
+  }
+
+  .showcase-header h1 {
+    font-size: 2rem;
+  }
+
+  .content-section {
+    padding: 1.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-list {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-item {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .service-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .banner-container {
+    height: 250px;
+  }
+
+  .showcase-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .showcase-container {
+    padding: 0 1rem;
+  }
+
+  .content-section {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .highlight-phone {
+    font-size: 1rem;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .btn-edit-showcase {
+    width: 100%;
+    padding: 0.9rem;
+  }
+}
+  /* Контейнер для карусели галереи */
   .carousel-container {
     margin-top: 20px;
   }
@@ -81,6 +475,8 @@
   .carousel-inner .row {
     margin: 0;
   }
+
+  /* Элемент галереи */
   .gallery-item {
     position: relative;
     isolation: isolate;
@@ -108,6 +504,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* Кнопка удаления изображения */
   .delete-btn {
     position: absolute;
     top: 10px;
@@ -125,6 +523,8 @@
   .delete-btn:hover {
     background-color: #b71c1c;
   }
+
+  /* Кнопки редактирования и загрузки */
   .btn-edit, .btn-upload {
     background: #8e24aa;
     border: none;
@@ -137,6 +537,8 @@
     background: #d81b60;
     transform: scale(1.03);
   }
+
+  /* Форма загрузки изображения */
   .upload-form {
     background: linear-gradient(135deg, #ede7f6, #fce4ec);
     padding: 20px;
@@ -156,6 +558,8 @@
     resize: vertical;
     min-height: 80px;
   }
+
+  /* Модальное окно для просмотра изображения */
   .modal-content {
     border-radius: 12px;
     background: #fff;
@@ -172,18 +576,8 @@
     text-align: center;
     font-size: 1rem;
   }
-  .price-table {
-    width: 100%;
-    margin-top: 15px;
-  }
-  .price-table th, .price-table td {
-    padding: 10px;
-    text-align: left;
-  }
-  .price-table th {
-    background: #f5f5f5;
-    font-weight: 600;
-  }
+
+  /* Сообщения об успехе и ошибке */
   .error-message, .success-message {
     font-size: 0.9rem;
     margin-top: 10px;
@@ -198,22 +592,7 @@
     color: #2e7d32;
     background: #c8e6c9;
   }
-  @media (max-width: 768px) {
-    .gallery-item {
-      flex: 0 0 calc(50% - 10px);
-    }
-    .gallery-item img {
-      height: 150px;
-    }
-  }
-  @media (max-width: 576px) {
-    .gallery-item {
-      flex: 0 0 100%;
-    }
-    .gallery-item img {
-      height: 120px;
-    }
-  }
+
 </style>
 
 <div class="showcase-container">
@@ -221,53 +600,103 @@
     <h1>{{ workshop.workshop_name }}</h1>
   </div>
 
-  {% if showcase.cover_photo %}
-    <img src="{{ showcase.cover_photo.url }}" alt="Баннер {{ workshop.workshop_name }}" class="banner-img">
-  {% else %}
-    <div class="alert alert-info text-center">Баннер не загружен.</div>
-  {% endif %}
+  <div class="banner-container">
+    {% if showcase.cover_photo %}
+      <img src="{{ showcase.cover_photo.url }}" alt="Баннер {{ workshop.workshop_name }}" class="banner-img">
+      <div class="banner-overlay">
+        <h2>{{ workshop.workshop_name }}</h2>
+        <p>{{ workshop.description|truncatechars:100|default:"Профессиональные бьюти-услуги высшего качества" }}</p>
+      </div>
+    {% else %}
+      <div class="banner-img" style="background: linear-gradient(45deg, #00897b, #ff8a65); display: flex; align-items: center; justify-content: center; color: white;">
+        <h2 style="font-size: 2rem; text-align: center; padding: 0 20px;">{{ workshop.workshop_name }}</h2>
+      </div>
+    {% endif %}
+  </div>
 
   <div class="row">
-    <div class="col-md-8">
-      <div class="content-card">
-        <h4>О нас</h4>
-        <p class="description-text">{{ workshop.description|default:"Описание не указано."|linebreaksbr }}</p>
+    <div class="col-lg-8">
+      <div class="content-section">
+        <h2 class="section-title"><i class="fas fa-info-circle"></i> О нас</h2>
+        <p class="description-text">{{ workshop.description|default:"Мы предлагаем профессиональные бьюти-услуги высшего качества. Наша команда состоит из опытных мастеров, которые следят за последними тенденциями индустрии красоты."|linebreaksbr }}</p>
+      </div>
 
-        <h4>Контакты</h4>
-        <p><strong>Телефон:</strong> {{ workshop.phone }}</p>
-        <p><strong>Время работы:</strong> {{ workshop.working_hours|default:"Не указано." }}</p>
+      <div class="content-section">
+        <h2 class="section-title"><i class="fas fa-address-card"></i> Контакты</h2>
+        <div class="contact-info">
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-phone"></i>
+            </div>
+            <div>
+              <h4>Телефон</h4>
+              <p>{{ workshop.phone|default:"Не указан" }}</p>
+            </div>
+          </div>
 
-        <h4>Услуги и цены</h4>
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div>
+              <h4>Время работы</h4>
+              <p>{{ workshop.working_hours|default:"Не указано" }}</p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div>
+              <h4>Адрес</h4>
+              <p>{{ workshop.workshop_address|default:"Адрес не указан" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <a href="tel:{{ workshop.phone }}" class="highlight-phone">
+          <i class="fas fa-phone-alt"></i> Позвонить: {{ workshop.phone }}
+        </a>
+      </div>
+
+      <div class="content-section">
+        <h2 class="section-title"><i class="fas fa-tags"></i> Услуги и цены</h2>
         {% if grouped_prices %}
           {% for category, prices in grouped_prices.items %}
-            <h5>{{ category }}</h5>
-            <table class="price-table">
-              <thead>
-                <tr>
-                  <th>Услуга</th>
-                  <th>Цена (руб.)</th>
-                  <th>Длительность</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div class="service-category">
+              <h3 class="category-title">{{ category }}</h3>
+              <div class="service-list">
                 {% for price in prices %}
-                  <tr>
-                    <td>{{ price.service_name }}</td>
-                    <td>{{ price.price }}</td>
-                    <td>{{ price.duration|default:"Не указано" }}</td>
-                  </tr>
+                  <div class="service-card">
+                    <div class="service-name">{{ price.service_name }}</div>
+                    <div class="service-description">
+                      {{ price.description|default:"" }}
+                    </div>
+                    <div class="service-details">
+                      <div class="service-duration">
+                        <i class="far fa-clock"></i> {{ price.duration|format_duration|default:"–" }}
+                      </div>
+                      <div class="service-price">
+                        {{ price.price }} ₽
+                      </div>
+                    </div>
+                  </div>
                 {% endfor %}
-              </tbody>
-            </table>
+              </div>
+            </div>
           {% endfor %}
         {% else %}
-          <p>Цены на услуги не указаны.</p>
+          <p class="text-muted">Цены на услуги не указаны.</p>
         {% endif %}
+      </div>
 
+
+      <div class="content-card">
         <h4>Галерея работ</h4>
         <div id="gallery-message" class="message-container"></div>
         {% if is_owner %}
-          <form method="post" enctype="multipart/form-data" class="upload-form">
+          <form method="post" enctype="multipart/form-data" class="upload-form" action="{% url 'showcase:upload_gallery_image' %}">
             {% csrf_token %}
             <div class="row">
               <div class="col-md-6 mb-3">
@@ -334,46 +763,86 @@
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="sidebar-card">
-        <h4>Найдите нас</h4>
-        <p><strong>Адрес:</strong> {{ workshop.workshop_address|default:"Адрес не указан" }}</p>
+     <div class="col-lg-4">
+      <div class="content-section">
+        <h2 class="section-title"><i class="fas fa-map-marked-alt"></i> Найдите нас</h2>
         {% if workshop.workshop_address %}
-          <iframe
-            class="map-container w-100"
-            src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBE6BIEb3sYS8pIPFrRJBVnOL_BxzZQ5Ts&q={{ workshop.workshop_address|urlencode }},{{ workshop.city|urlencode }}"
-            frameborder="0"
-            allowfullscreen
-            aria-hidden="false"
-            tabindex="0">
-          </iframe>
+          <div class="map-container">
+            <iframe
+              src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBE6BIEb3sYS8pIPFrRJBVnOL_BxzZQ5Ts&q={{ workshop.workshop_address|urlencode }},{{ workshop.city|urlencode }}"
+              width="100%"
+              height="100%"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
         {% else %}
-          <p class="text-center">Карта недоступна: адрес не указан.</p>
+          <div class="map-placeholder">
+            <div class="text-center">
+              <i class="fas fa-map-marked-alt" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+              <p>Адрес не указан</p>
+            </div>
+          </div>
         {% endif %}
-        <div class="highlight-phone">Связаться: {{ workshop.phone }}</div>
       </div>
     </div>
   </div>
 
   {% if is_owner %}
-    <a href="{% url 'showcase:edit_showcase' %}" class="btn btn-edit btn-lg w-100">Редактировать витрину</a>
+    <div class="owner-actions">
+      <a href="{% url 'showcase:edit_showcase' %}" class="btn-edit-showcase">
+        <i class="fas fa-edit"></i> Редактировать витрину
+      </a>
+    </div>
   {% endif %}
 </div>
 
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="imageModalLabel">Просмотр изображения</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <img src="" alt="Увеличенное изображение" id="modalImage">
-        <p id="modalDescription"></p>
+      <div class="modal-body p-0">
+        <img src="" alt="Увеличенное изображение" class="modal-image" id="modalImage">
+        <div class="modal-description">
+          <p id="modalDescription" class="mb-0"></p>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Загрузить новое изображение</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="modal_image" class="form-label">Изображение</label>
+            <input type="file" class="form-control" id="modal_image" name="image" required>
+          </div>
+          <div class="mb-3">
+            <label for="modal_description" class="form-label">Описание</label>
+            <textarea class="form-control" id="modal_description" name="description" rows="3" placeholder="Опишите работу..."></textarea>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn-action">
+              <i class="fas fa-upload"></i> Загрузить
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -421,6 +890,39 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+
+  // Загрузка изображения через AJAX
+  const uploadForm = document.querySelector('.upload-form');
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const messageContainer = document.getElementById('gallery-message');
+      fetch('{% url 'showcase:upload_gallery_image' %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          messageContainer.innerHTML = '<div class="success-message">Изображение успешно загружено!</div>';
+          setTimeout(() => {
+            location.reload(); // Перезагрузка для обновления галереи
+          }, 1000);
+        } else {
+          messageContainer.innerHTML = `<div class="error-message">Ошибка при загрузке изображения: ${data.errors || 'Неизвестная ошибка'}</div>`;
+        }
+      })
+      .catch(error => {
+        console.error('Ошибка:', error);
+        messageContainer.innerHTML = `<div class="error-message">Произошла ошибка при загрузке: ${error.message}</div>`;
+      });
+    });
+  }
 });
 </script>
 {% endblock %}

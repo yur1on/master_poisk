@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static crispy_forms_tags %}
+{% load static crispy_forms_tags format_duration %}
 
 {% block content %}
 <style>
@@ -335,18 +335,91 @@
   /* Price table */
   .price-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
   }
 
   .price-table th,
   .price-table td {
-    padding: 12px;
+    padding: 16px;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
   }
 
   .price-table th {
-    background: #edf2f7;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .price-table td {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+  }
+
+  .price-table .price-cell {
+    text-align: right;
+    color: var(--secondary-color);
+    font-weight: 600;
+  }
+
+  .price-table tr {
+    transition: var(--transition);
+  }
+
+  .price-table tr:hover {
+    background: #f7fafc;
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Mobile price cards */
+  .price-mobile {
+    display: none;
+  }
+
+  .price-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: var(--transition);
+  }
+
+  .price-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .price-card div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+
+  .price-card div:last-child {
+    margin-bottom: 0;
+  }
+
+  .price-card .label {
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+
+  .price-card .value {
+    color: var(--text-dark);
+  }
+
+  .price-card .price-value {
+    color: var(--secondary-color);
     font-weight: 600;
   }
 
@@ -370,6 +443,16 @@
       margin-left: 80px;
       width: calc(100% - 80px);
       padding: 20px;
+    }
+
+    .price-table th,
+    .price-table td {
+      padding: 12px;
+      font-size: 0.9rem;
+    }
+
+    .price-table th {
+      font-size: 0.95rem;
     }
   }
 
@@ -395,6 +478,14 @@
     .service-form .col-md-2 {
       flex: 0 0 100%;
       max-width: 100%;
+    }
+
+    .price-table {
+      display: none;
+    }
+
+    .price-table + .price-mobile {
+      display: block;
     }
   }
 </style>
@@ -469,12 +560,30 @@
                     {% for price in prices %}
                       <tr>
                         <td>{{ price.service_name }}</td>
-                        <td>{{ price.price }}</td>
-                        <td>{{ price.duration|default:"Не указано" }}</td>
+                        <td class="price-cell">{{ price.price }}</td>
+                        <td>{{ price.duration|format_duration|default:"Не указано" }}</td>
                       </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+                <div class="price-mobile">
+                  {% for price in prices %}
+                    <div class="price-card">
+                      <div>
+                        <span class="label">Услуга:</span>
+                        <span class="value">{{ price.service_name }}</span>
+                      </div>
+                      <div>
+                        <span class="label">Цена:</span>
+                        <span class="price-value">{{ price.price }} руб.</span>
+                      </div>
+                      <div>
+                        <span class="label">Длительность:</span>
+                        <span class="value">{{ price.duration|format_duration|default:"Не указано" }}</span>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
               {% endfor %}
             {% else %}
               <p>Цены на услуги не указаны.</p>
@@ -515,7 +624,7 @@
                     <div class="card">
                       <div class="card-header">
                         <div class="form-check">
-                          <input type="checkbox" id="select_all_{{ category }}" class="select-all" data-category="{{ category }}">
+                          <input type="checkbox" id="select_all_{{ category }}" class.="select-all" data-category="{{ category }}">
                           <label for="select_all_{{ category }}">{{ category }} <small>(выбрать все)</small></label>
                         </div>
                       </div>
@@ -650,6 +759,27 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // Validate duration input
+  function validateDurationInput(input) {
+    const value = input.value.trim();
+    const durationRegex = /^\d+\s*ч(\s*\d+\s*мин)?$|^\d+\s*мин$|^\d+(\.\d+)?$/;
+    const errorElement = input.parentElement.querySelector('.error-message') || document.createElement('div');
+    errorElement.className = 'error-message';
+    if (!durationRegex.test(value) && value !== '') {
+      errorElement.textContent = "Введите длительность в формате: 'X ч Y мин', 'X ч', 'Y мин' или число минут";
+      input.parentElement.appendChild(errorElement);
+      return false;
+    } else {
+      errorElement.textContent = '';
+      return true;
+    }
+  }
+
+  // Apply validation to existing duration fields
+  document.querySelectorAll('input[name$="duration"]').forEach(input => {
+    input.addEventListener('input', () => validateDurationInput(input));
+  });
+
   // AJAX form submission
   function submitForm(formId, messageDivId, successCallback) {
     const form = document.getElementById(formId);
@@ -662,6 +792,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+      // Validate all duration fields
+      const durationInputs = form.querySelectorAll('input[name$="duration"]');
+      let isValid = true;
+      durationInputs.forEach(input => {
+        if (!validateDurationInput(input)) {
+          isValid = false;
+        }
+      });
+      if (!isValid) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">Пожалуйста, исправьте ошибки в поле длительности.</div>';
+        return;
+      }
+
       const formData = new FormData(form);
 
       try {
@@ -848,6 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeForm(form) {
       const select = form.querySelector('select[name$="activity_area"]');
       const serviceSelect = form.querySelector('select[name$="service_name"]');
+      const durationInput = form.querySelector('input[name$="duration"]');
       // Ensure DELETE field exists
       let deleteInput = form.querySelector('input[name$="-DELETE"]');
       if (!deleteInput) {
@@ -863,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateServiceChoices(select, serviceSelect);
         form.dataset.serviceName = '';
       });
+      durationInput.addEventListener('input', () => validateDurationInput(durationInput));
       const removeBtn = form.querySelector('.remove-btn');
       removeBtn.addEventListener('click', removeForm);
     }

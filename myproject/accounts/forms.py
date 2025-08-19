@@ -145,7 +145,7 @@ class ServicePriceForm(forms.ModelForm):
             'activity_area': 'Сфера деятельности',
             'service_name': 'Услуга',
             'price': 'Цена (руб.)',
-            'duration': 'Длительность'
+            'duration': 'Длительность в мин.'
         }
         widgets = {
             'activity_area': forms.Select(attrs={'class': 'form-control'}),

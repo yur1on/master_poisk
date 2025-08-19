@@ -66,7 +66,7 @@ def upload_gallery_image(request):
 
     if request.method == 'POST':
         upload_form = GalleryImageForm(request.POST, request.FILES)
-        if form.is_valid():
+        if upload_form.is_valid():
             gallery_image = upload_form.save(commit=False)
             gallery_image.showcase = showcase
             gallery_image.save()
@@ -83,15 +83,36 @@ def upload_gallery_image(request):
             logger.error(f"Ошибки формы загрузки изображения: {upload_form.errors}")
             if is_ajax:
                 return JsonResponse({'success': False, 'errors': upload_form.errors.as_json()}, status=400)
-            return render(request, 'accounts/profile.html', {
-                'upload_form': upload_form,
-                'workshop_profile': workshop,
-                'is_workshop': True,
-                'user': request.user
+            # Рендерим view_showcase.html с ошибками формы
+            prices = ServicePrice.objects.filter(workshop=workshop)
+            grouped_prices = OrderedDict()
+            CATEGORY_TRANSLATIONS = {
+                'hair': 'Уход за волосами',
+                'nails': 'Ногтевой сервис',
+                'cosmetology': 'Косметология',
+                'makeup': 'Макияж',
+                'brows_lashes': 'Уход за бровями и ресницами',
+                'epilation': 'Эпиляция и депиляция',
+                'body': 'Массаж и уход за телом',
+                'tattoo_piercing': 'Тату и пирсинг',
+                'styling': 'Стилистика и имидж',
+                'kids': 'Детская бьюти-сфера',
+                'alternative': 'Альтернативные направления',
+                'education': 'Обучение и менторство'
+            }
+            for price in prices:
+                cat = CATEGORY_TRANSLATIONS.get(price.activity_area.category, price.activity_area.get_category_display())
+                grouped_prices.setdefault(cat, []).append(price)
+            return render(request, 'showcase/view_showcase.html', {
+                'workshop': workshop,
+                'showcase': showcase,
+                'gallery': showcase.gallery_images.all(),
+                'is_owner': True,
+                'grouped_prices': grouped_prices,
+                'upload_form': upload_form
             })
     else:
-        return redirect('accounts:profile')
-
+        return redirect('showcase:view_showcase', username=request.user.username)
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
     is_owner = request.user.is_authenticated and request.user == user
