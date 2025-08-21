@@ -3,7 +3,6 @@
 {% block title %}Витрина {{ workshop.workshop_name }}{% endblock %}
 {% block content %}
 <style>
-
 :root {
   --primary: #00897b;
   --primary-light: #26a69a;
@@ -15,39 +14,43 @@
   --text: #1e293b;
   --text-muted: #64748b;
   --border: #e2e8f0;
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 16px -4px rgba(0, 0, 0, 0.1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --transition: all 0.25s ease;
+  --viber: #5947bb;
+  --telegram: #0088cc;
+  --instagram: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  --whatsapp: #25d366;
 }
 
 body {
   background-color: var(--background);
   color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 .showcase-container {
   max-width: 1280px;
-  margin: 2rem auto;
-  padding: 0 1.5rem;
+  margin: 1.8rem auto;
+  padding: 0 1.25rem;
 }
 
 .showcase-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .showcase-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 800;
   color: var(--text);
-  margin-bottom: 1rem;
-  letter-spacing: -0.5px;
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.3px;
   position: relative;
   display: inline-block;
 }
@@ -55,11 +58,11 @@ body {
 .showcase-header h1::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
+  width: 50px;
+  height: 3px;
   background: linear-gradient(to right, var(--primary), var(--secondary));
   border-radius: 2px;
 }
@@ -68,20 +71,21 @@ body {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  height: 400px;
-  margin-bottom: 2rem;
+  height: 350px;
+  margin-bottom: 1.8rem;
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
 }
 
 .banner-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s var(--transition);
+  transition: transform 0.4s ease;
 }
 
 .banner-container:hover .banner-img {
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
 .banner-overlay {
@@ -89,186 +93,425 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  padding: 1.5rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  padding: 1.25rem;
   color: white;
 }
 
 .banner-overlay h2 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
 }
 
 .content-section {
   background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 2rem;
-  margin-bottom: 1.5rem;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
   transition: var(--transition);
+  border: 1px solid var(--border);
 }
 
 .content-section:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .section-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--primary-dark);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding-bottom: 0.6rem;
+  border-bottom: 1.5px solid var(--primary-light);
 }
 
 .section-title i {
   color: var(--primary);
+  font-size: 1.1rem;
 }
 
 .description-text {
   white-space: pre-wrap;
   color: var(--text-muted);
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
+/* Улучшенные контакты */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  margin-top: 1.25rem;
 }
 
-.contact-item {
+.contact-card {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 1rem;
-  background: #f1f5f9;
-  border-radius: var(--radius-sm);
+  align-items: flex-start;
+  gap: 0.75rem;
   transition: var(--transition);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
 }
 
-.contact-item:hover {
-  background: #e2e8f0;
-  transform: translateX(5px);
+.contact-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
 }
 
 .contact-icon {
-  background: var(--primary);
+  background: var(--primary-light);
   color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 0.95rem;
+  box-shadow: 0 3px 5px rgba(0, 137, 123, 0.15);
+}
+
+.contact-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.2rem;
+}
+
+.contact-info p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.85rem;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .highlight-phone {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   font-weight: 600;
-  font-size: 1.1rem;
-  padding: 1rem 1.5rem;
-  border-radius: var(--radius-sm);
+  font-size: 1.05rem;
+  padding: 1rem 1.3rem;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 137, 123, 0.2);
+  margin-top: 1.25rem;
+  box-shadow: 0 4px 8px rgba(0, 137, 123, 0.2);
   transition: var(--transition);
   width: 100%;
   justify-content: center;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
 }
 
 .highlight-phone:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 137, 123, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 137, 123, 0.25);
+  background: linear-gradient(135deg, #00695c, #004d40);
 }
 
 .highlight-phone i {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
+  animation: pulse 2s infinite;
 }
 
-.services-container {
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Социальные сети */
+.social-section {
   margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border);
 }
 
-.service-category {
-  margin-bottom: 1.5rem;
+.social-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
-.category-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-dark);
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border);
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(46px, 1fr));
+  gap: 0.85rem;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--border);
+  color: white;
+  font-size: 1.3rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+.social-icon.viber { background-color: var(--viber); }
+.social-icon.telegram { background-color: var(--telegram); }
+.social-icon.instagram { background: var(--instagram); }
+.social-icon.whatsapp { background-color: var(--whatsapp); }
+
+/* Менеджеры */
+.managers-section {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border);
+}
+
+.managers-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
-.service-list {
+.managers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
-.service-card {
-  background: #f5ef3b22;
-  border-radius: var(--radius-sm);
-  padding: 1.25rem;
+.manager-card {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
   border: 1px solid var(--border);
 }
 
+.manager-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.manager-header {
+  background: var(--primary);
+  padding: 0.85rem;
+  text-align: center;
+}
+
+.manager-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.6rem;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  font-size: 1.75rem;
+  color: var(--primary-dark);
+}
+
+.manager-header h4 {
+  color: white;
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.manager-body {
+  padding: 1rem;
+}
+
+.manager-role {
+  font-size: 0.85rem;
+  color: var(--primary-dark);
+  font-weight: 600;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.manager-contact {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-start;
+}
+
+.manager-contact a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.1rem;
+  transition: var(--transition);
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.manager-contact a:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.manager-contact a.telegram { background-color: var(--telegram); }
+.manager-contact a.viber { background-color: var(--viber); }
+.manager-contact a.instagram { background: var(--instagram); }
+.manager-contact a.whatsapp { background-color: var(--whatsapp); }
+.manager-contact a.phone { background-color: var(--primary); }
+
+/* Услуги */
+.services-container {
+  margin-top: 1.25rem;
+}
+
+.service-category {
+  margin-bottom: 1.75rem;
+}
+
+.category-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid var(--primary-light);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.service-card {
+  background: #f8fafc;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  transition: var(--transition);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .service-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 8px rgba(0, 137, 123, 0.1);
+  box-shadow: 0 5px 10px rgba(0, 137, 123, 0.08);
   transform: translateY(-2px);
 }
 
 .service-name {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--text);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.service-name::before {
+  content: "•";
+  color: var(--primary);
+  font-size: 1.3rem;
+  line-height: 0.6;
+  vertical-align: middle;
+}
+
+.service-description {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+  min-height: 2.6em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
 }
 
 .service-details {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
+  padding-top: 0.6rem;
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 
 .service-duration {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .service-price {
   font-weight: 700;
   color: var(--primary-dark);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  min-width: 70px;
+  text-align: right;
 }
 
+/* Карта */
 .map-container {
-  height: 300px;
+  height: 260px;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   background: #e2e8f0;
+  border: 1px solid var(--border);
 }
 
 .map-placeholder {
@@ -279,15 +522,24 @@ body {
   background: #f1f5f9;
   color: var(--text-muted);
   border-radius: var(--radius-md);
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
+.map-placeholder i {
+  font-size: 2.8rem;
+  color: #cbd5e1;
+}
+
+/* Админ-действия */
 .owner-actions {
   background: var(--surface);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1.25rem;
   text-align: center;
   box-shadow: var(--shadow-sm);
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
+  border: 1px solid var(--border);
 }
 
 .btn-edit-showcase {
@@ -295,155 +547,95 @@ body {
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 0.8rem 2rem;
+  padding: 0.75rem 1.8rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: var(--transition);
-  box-shadow: 0 4px 6px rgba(0, 137, 123, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 137, 123, 0.2);
+  text-decoration: none;
 }
 
 .btn-edit-showcase:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 8px rgba(0, 137, 123, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 137, 123, 0.25);
 }
 
-.message-container {
-  margin-top: 1rem;
+/* Галерея */
+.gallery-section {
+  margin-top: 1.75rem;
 }
 
-.success-message {
-  background: #dcfce7;
-  color: #166534;
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  border-left: 4px solid #16a34a;
-}
-
-.error-message {
-  background: #fee2e2;
-  color: #b91c1c;
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  border-left: 4px solid #ef4444;
-}
-
-.upload-form {
-  background: #f1f5f9;
+.gallery-item {
   border-radius: var(--radius-md);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background-color: white;
-  font-family: inherit;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  height: 170px;
   transition: var(--transition);
 }
 
-.form-control:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.2);
+.gallery-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
-.modal-content {
-  border-radius: var(--radius-lg);
-  border: none;
-  overflow: hidden;
-}
-
-.modal-body {
-  padding: 0;
-}
-
-.modal-image {
+.gallery-img {
   width: 100%;
-  max-height: 80vh;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
-.modal-description {
-  padding: 1.5rem;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+.gallery-item:hover .gallery-img {
+  transform: scale(1.03);
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-  .banner-container {
-    height: 350px;
-  }
-
-  .service-list {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  padding: 0.8rem;
+  color: white;
+  transform: translateY(15px);
+  opacity: 0;
+  transition: var(--transition);
 }
 
+.gallery-item:hover .gallery-overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(211, 47, 47, 0.85);
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.gallery-item:hover .delete-btn {
+  opacity: 1;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
   .banner-container {
-    height: 300px;
-  }
-
-  .showcase-header h1 {
-    font-size: 2rem;
-  }
-
-  .content-section {
-    padding: 1.5rem;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .service-list {
-    grid-template-columns: 1fr;
-  }
-
-  .contact-item {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .service-details {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .banner-container {
-    height: 250px;
-  }
-
-  .showcase-header h1 {
-    font-size: 1.75rem;
+    height: 280px;
   }
 
   .showcase-container {
@@ -451,148 +643,51 @@ body {
   }
 
   .content-section {
-    padding: 1.25rem;
-    margin-bottom: 1.25rem;
+    padding: 1.5rem;
   }
 
-  .highlight-phone {
-    font-size: 1rem;
-    padding: 0.85rem 1.25rem;
+  .contact-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .btn-edit-showcase {
-    width: 100%;
-    padding: 0.9rem;
+  .social-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .managers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .service-list {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
-  /* Контейнер для карусели галереи */
-  .carousel-container {
-    margin-top: 20px;
-  }
-  .carousel-item {
-    padding: 0 15px;
-  }
-  .carousel-inner .row {
-    margin: 0;
+
+@media (max-width: 576px) {
+  .banner-container {
+    height: 240px;
   }
 
-  /* Элемент галереи */
-  .gallery-item {
-    position: relative;
-    isolation: isolate;
-    margin-bottom: 20px;
-  }
-  .gallery-item img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  .gallery-item img:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-  .gallery-item p {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: #424242;
-    text-align: center;
-    max-height: 3em;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .contact-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
-  /* Кнопка удаления изображения */
-  .delete-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #d32f2f;
-    color: white;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    z-index: 10;
-  }
-  .delete-btn:hover {
-    background-color: #b71c1c;
+  .social-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Кнопки редактирования и загрузки */
-  .btn-edit, .btn-upload {
-    background: #8e24aa;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 1.1rem;
-    transition: background 0.2s, transform 0.2s;
-  }
-  .btn-edit:hover, .btn-upload:hover {
-    background: #d81b60;
-    transform: scale(1.03);
+  .managers-grid {
+    grid-template-columns: 1fr;
   }
 
-  /* Форма загрузки изображения */
-  .upload-form {
-    background: linear-gradient(135deg, #ede7f6, #fce4ec);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-  }
-  .upload-form label {
-    font-weight: 500;
-    color: #424242;
-  }
-  .upload-form input[type="file"], .upload-form textarea {
-    border-radius: 6px;
-    border: 1px solid #ce93d8;
-    padding: 10px;
-  }
-  .upload-form textarea {
-    resize: vertical;
-    min-height: 80px;
+  .service-list {
+    grid-template-columns: 1fr;
   }
 
-  /* Модальное окно для просмотра изображения */
-  .modal-content {
-    border-radius: 12px;
-    background: #fff;
+  .section-title {
+    font-size: 1.25rem;
   }
-  .modal-body img {
-    width: 100%;
-    max-height: 70vh;
-    object-fit: contain;
-    border-radius: 8px;
-  }
-  .modal-body p {
-    margin-top: 15px;
-    color: #424242;
-    text-align: center;
-    font-size: 1rem;
-  }
-
-  /* Сообщения об успехе и ошибке */
-  .error-message, .success-message {
-    font-size: 0.9rem;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 6px;
-  }
-  .error-message {
-    color: #d32f2f;
-    background: #ffcdd2;
-  }
-  .success-message {
-    color: #2e7d32;
-    background: #c8e6c9;
-  }
-
+}
 </style>
 
 <div class="showcase-container">
@@ -605,11 +700,11 @@ body {
       <img src="{{ showcase.cover_photo.url }}" alt="Баннер {{ workshop.workshop_name }}" class="banner-img">
       <div class="banner-overlay">
         <h2>{{ workshop.workshop_name }}</h2>
-        <p>{{ workshop.description|truncatechars:100|default:"Профессиональные бьюти-услуги высшего качества" }}</p>
+        <p>{{ workshop.description|truncatechars:80|default:"Профессиональные бьюти-услуги высшего качества" }}</p>
       </div>
     {% else %}
       <div class="banner-img" style="background: linear-gradient(45deg, #00897b, #ff8a65); display: flex; align-items: center; justify-content: center; color: white;">
-        <h2 style="font-size: 2rem; text-align: center; padding: 0 20px;">{{ workshop.workshop_name }}</h2>
+        <h2 style="font-size: 1.75rem; text-align: center; padding: 0 15px;">{{ workshop.workshop_name }}</h2>
       </div>
     {% endif %}
   </div>
@@ -622,41 +717,90 @@ body {
       </div>
 
       <div class="content-section">
-        <h2 class="section-title"><i class="fas fa-address-card"></i> Контакты</h2>
-        <div class="contact-info">
-          <div class="contact-item">
+        <h2 class="section-title"><i class="fas fa-address-card"></i> Контактная информация</h2>
+
+        <div class="contact-grid">
+          <div class="contact-card">
             <div class="contact-icon">
               <i class="fas fa-phone"></i>
             </div>
-            <div>
+            <div class="contact-info">
               <h4>Телефон</h4>
               <p>{{ workshop.phone|default:"Не указан" }}</p>
             </div>
           </div>
 
-          <div class="contact-item">
+          <div class="contact-card">
             <div class="contact-icon">
               <i class="fas fa-clock"></i>
             </div>
-            <div>
+            <div class="contact-info">
               <h4>Время работы</h4>
               <p>{{ workshop.working_hours|default:"Не указано" }}</p>
             </div>
           </div>
 
-          <div class="contact-item">
+          <div class="contact-card">
             <div class="contact-icon">
               <i class="fas fa-map-marker-alt"></i>
             </div>
-            <div>
+            <div class="contact-info">
               <h4>Адрес</h4>
               <p>{{ workshop.workshop_address|default:"Адрес не указан" }}</p>
             </div>
           </div>
         </div>
 
+        <!-- Социальные сети -->
+        <div class="social-section">
+          <h3 class="social-title"><i class="fas fa-hashtag"></i> Наши социальные сети</h3>
+          <div class="social-grid">
+            {% if showcase.viber %}
+              {% if showcase.viber|slice:":6" == "viber:" or showcase.viber|slice:":4" == "http" %}
+                <a href="{{ showcase.viber }}" target="_blank" rel="noopener" class="social-icon viber" title="Viber">
+                  <i class="fab fa-viber"></i>
+                </a>
+              {% else %}
+                <a href="viber://chat?number={{ showcase.viber|urlencode }}" target="_blank" class="social-icon viber" title="Viber">
+                  <i class="fab fa-viber"></i>
+                </a>
+              {% endif %}
+            {% endif %}
+
+            {% if showcase.telegram %}
+              {% if showcase.telegram|slice:":4" == "http" %}
+                <a href="{{ showcase.telegram }}" target="_blank" rel="noopener" class="social-icon telegram" title="Telegram">
+                  <i class="fab fa-telegram"></i>
+                </a>
+              {% else %}
+                <a href="https://t.me/{{ showcase.telegram|urlencode }}" target="_blank" class="social-icon telegram" title="Telegram">
+                  <i class="fab fa-telegram"></i>
+                </a>
+              {% endif %}
+            {% endif %}
+
+            {% if showcase.instagram %}
+              {% if showcase.instagram|slice:":4" == "http" %}
+                <a href="{{ showcase.instagram }}" target="_blank" rel="noopener" class="social-icon instagram" title="Instagram">
+                  <i class="fab fa-instagram"></i>
+                </a>
+              {% else %}
+                <a href="https://instagram.com/{{ showcase.instagram|urlencode }}" target="_blank" class="social-icon instagram" title="Instagram">
+                  <i class="fab fa-instagram"></i>
+                </a>
+              {% endif %}
+            {% endif %}
+
+            {% if showcase.whatsapp %}
+              <a href="https://wa.me/{{ showcase.whatsapp|urlencode }}" target="_blank" class="social-icon whatsapp" title="WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
         <a href="tel:{{ workshop.phone }}" class="highlight-phone">
-          <i class="fas fa-phone-alt"></i> Позвонить: {{ workshop.phone }}
+          <i class="fas fa-phone-alt"></i> Позвонить нам
         </a>
       </div>
 
@@ -665,7 +809,7 @@ body {
         {% if grouped_prices %}
           {% for category, prices in grouped_prices.items %}
             <div class="service-category">
-              <h3 class="category-title">{{ category }}</h3>
+              <h3 class="category-title"><i class="fas fa-spa"></i> {{ category }}</h3>
               <div class="service-list">
                 {% for price in prices %}
                   <div class="service-card">
@@ -687,30 +831,32 @@ body {
             </div>
           {% endfor %}
         {% else %}
-          <p class="text-muted">Цены на услуги не указаны.</p>
+          <p class="text-muted text-center py-3">Цены на услуги не указаны.</p>
         {% endif %}
       </div>
 
-
-      <div class="content-card">
-        <h4>Галерея работ</h4>
+      <div class="content-section">
+        <h2 class="section-title"><i class="fas fa-images"></i> Наша галерея</h2>
         <div id="gallery-message" class="message-container"></div>
+
         {% if is_owner %}
-          <form method="post" enctype="multipart/form-data" class="upload-form" action="{% url 'showcase:upload_gallery_image' %}">
+          <form method="post" enctype="multipart/form-data" class="upload-form mb-4" action="{% url 'showcase:upload_gallery_image' %}">
             {% csrf_token %}
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                {{ upload_form.image.label_tag }}
+            <div class="row g-3">
+              <div class="col-md-7">
+                <label class="form-label">Добавить фото</label>
                 {{ upload_form.image }}
               </div>
-              <div class="col-md-6 mb-3">
-                {{ upload_form.description.label_tag }}
+              <div class="col-md-5">
+                <label class="form-label">Описание</label>
                 {{ upload_form.description }}
               </div>
             </div>
-            <button type="submit" class="btn btn-upload">Загрузить</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3 py-2">
+              <i class="fas fa-upload me-2"></i>Загрузить изображение
+            </button>
             {% if upload_form.errors %}
-              <div class="error-message">
+              <div class="error-message mt-2">
                 {% for field in upload_form %}
                   {% for error in field.errors %}
                     {{ error }}<br>
@@ -723,49 +869,59 @@ body {
             {% endif %}
           </form>
         {% endif %}
+
         {% if gallery %}
-          <div class="carousel-container">
-            <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
-              <div class="carousel-inner">
-                {% for image in gallery %}
-                  {% if forloop.counter0|divisibleby:3 %}
-                    <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
-                      <div class="row">
-                  {% endif %}
-                        <div class="col-md-4 gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal" data-image="{{ image.image.url }}" data-description="{{ image.description|default:'Без описания' }}">
-                          <img src="{{ image.image.url }}" alt="{{ image.description|default:'Работа' }}">
-                          <p>{{ image.description|default:"Без описания" }}</p>
+          <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              {% for image in gallery %}
+                {% if forloop.counter0|divisibleby:3 %}
+                  <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
+                    <div class="row">
+                {% endif %}
+                      <div class="col-4">
+                        <div class="gallery-item"
+                             data-bs-toggle="modal"
+                             data-bs-target="#imageModal"
+                             data-image="{{ image.image.url }}"
+                             data-description="{{ image.description|default:'Без описания' }}">
+                          <img src="{{ image.image.url }}" alt="Галерея {{ forloop.counter }}" class="gallery-img">
+                          <div class="gallery-overlay">
+                            <p class="mb-0 text-truncate">{{ image.description|default:"Без описания" }}</p>
+                          </div>
                           {% if is_owner %}
-                            <button class="delete-btn" data-image-id="{{ image.id }}">Удалить</button>
+                            <button class="delete-btn" data-image-id="{{ image.id }}">
+                              <i class="fas fa-trash-alt me-1"></i>Удалить
+                            </button>
                           {% endif %}
                         </div>
-                  {% if forloop.counter0|add:1|divisibleby:3 or forloop.last %}
                       </div>
+                {% if forloop.counter|divisibleby:3 or forloop.last %}
                     </div>
-                  {% endif %}
-                {% endfor %}
-              </div>
-              {% if gallery|length > 3 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                  <span class="visually-hidden">Next</span>
-                </button>
-              {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
             </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
           </div>
         {% else %}
-          <p class="text-center">Галерея пуста.</p>
+          <div class="text-center py-4" style="background: #f8fafc; border-radius: 12px; border: 1px dashed var(--border);">
+            <i class="fas fa-images" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 0.8rem;"></i>
+            <p class="text-muted" style="font-size: 0.95rem;">Галерея пуста. Добавьте первое изображение!</p>
+          </div>
         {% endif %}
       </div>
     </div>
 
-     <div class="col-lg-4">
+    <div class="col-lg-4">
       <div class="content-section">
-        <h2 class="section-title"><i class="fas fa-map-marked-alt"></i> Найдите нас</h2>
+        <h2 class="section-title"><i class="fas fa-map-marked-alt"></i> Как нас найти</h2>
         {% if workshop.workshop_address %}
           <div class="map-container">
             <iframe
@@ -780,12 +936,17 @@ body {
           </div>
         {% else %}
           <div class="map-placeholder">
-            <div class="text-center">
-              <i class="fas fa-map-marked-alt" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
-              <p>Адрес не указан</p>
-            </div>
+            <i class="fas fa-map-marked-alt"></i>
+            <p>Адрес не указан</p>
           </div>
         {% endif %}
+
+        <div class="mt-3 p-2" style="background: #f8fafc; border-radius: 10px; border: 1px dashed var(--border);">
+          <h5 class="d-flex align-items-center gap-2 mb-2" style="font-size: 1rem;">
+            <i class="fas fa-car"></i> Парковка
+          </h5>
+          <p class="text-muted mb-0" style="font-size: 0.9rem;">Рядом с салоном есть бесплатная парковка для клиентов. Вход со двора, звоните при подъезде.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -802,54 +963,23 @@ body {
 <!-- Image Modal -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
+    <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
       <div class="modal-body p-0">
-        <img src="" alt="Увеличенное изображение" class="modal-image" id="modalImage">
-        <div class="modal-description">
-          <p id="modalDescription" class="mb-0"></p>
+        <img src="" alt="Увеличенное изображение" class="modal-image w-100" id="modalImage" style="max-height: 80vh; object-fit: contain;">
+        <div class="modal-description p-3 bg-white" style="border-top: 1px solid var(--border);">
+          <p id="modalDescription" class="mb-0 text-center" style="color: var(--text-muted); font-size: 1.05rem;"></p>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Upload Modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Загрузить новое изображение</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form method="post" enctype="multipart/form-data" id="uploadForm">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label for="modal_image" class="form-label">Изображение</label>
-            <input type="file" class="form-control" id="modal_image" name="image" required>
-          </div>
-          <div class="mb-3">
-            <label for="modal_description" class="form-label">Описание</label>
-            <textarea class="form-control" id="modal_description" name="description" rows="3" placeholder="Опишите работу..."></textarea>
-          </div>
-          <div class="d-grid">
-            <button type="submit" class="btn-action">
-              <i class="fas fa-upload"></i> Загрузить
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Модальное окно для просмотра изображения
   document.querySelectorAll('.gallery-item').forEach(item => {
     item.addEventListener('click', function(e) {
-      if (e.target.classList.contains('delete-btn')) return;
+      if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) return;
       const imageUrl = this.dataset.image;
       const description = this.dataset.description || 'Без описания';
       document.getElementById('modalImage').src = imageUrl;
@@ -861,6 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
+      e.preventDefault();
       const imageId = this.dataset.imageId;
       const messageContainer = document.getElementById('gallery-message');
       if (confirm('Вы уверены, что хотите удалить это изображение?')) {
@@ -875,17 +1006,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            messageContainer.innerHTML = '<div class="success-message">Изображение успешно удалено!</div>';
-            setTimeout(() => {
-              location.reload(); // Перезагрузка страницы
-            }, 1000);
+            messageContainer.innerHTML = `
+              <div class="alert alert-success d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+                <i class="fas fa-check-circle me-2" style="font-size: 1.1rem;"></i>
+                <div>Изображение успешно удалено!</div>
+              </div>`;
+            setTimeout(() => location.reload(), 1200);
           } else {
-            messageContainer.innerHTML = `<div class="error-message">Ошибка при удалении изображения: ${data.error || 'Неизвестная ошибка'}</div>`;
+            messageContainer.innerHTML = `
+              <div class="alert alert-danger d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+                <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.1rem;"></i>
+                <div>Ошибка при удалении: ${data.error || 'Неизвестная ошибка'}</div>
+              </div>`;
           }
         })
         .catch(error => {
           console.error('Ошибка:', error);
-          messageContainer.innerHTML = `<div class="error-message">Произошла ошибка при удалении: ${error.message}</div>`;
+          messageContainer.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+              <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.1rem;"></i>
+              <div>Произошла ошибка: ${error.message}</div>
+            </div>`;
         });
       }
     });
@@ -898,6 +1039,13 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const formData = new FormData(this);
       const messageContainer = document.getElementById('gallery-message');
+
+      messageContainer.innerHTML = `
+        <div class="alert alert-info d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+          <i class="fas fa-spinner fa-spin me-2" style="font-size: 1.1rem;"></i>
+          <div>Загружаем изображение...</div>
+        </div>`;
+
       fetch('{% url 'showcase:upload_gallery_image' %}', {
         method: 'POST',
         headers: {
@@ -909,17 +1057,38 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          messageContainer.innerHTML = '<div class="success-message">Изображение успешно загружено!</div>';
-          setTimeout(() => {
-            location.reload(); // Перезагрузка для обновления галереи
-          }, 1000);
+          messageContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+              <i class="fas fa-check-circle me-2" style="font-size: 1.1rem;"></i>
+              <div>Изображение загружено!</div>
+            </div>`;
+          setTimeout(() => location.reload(), 1200);
         } else {
-          messageContainer.innerHTML = `<div class="error-message">Ошибка при загрузке изображения: ${data.errors || 'Неизвестная ошибка'}</div>`;
+          let errors = '';
+          if (data.errors) {
+            if (typeof data.errors === 'string') {
+              errors = data.errors;
+            } else {
+              Object.values(data.errors).forEach(err => {
+                errors += `<div style="font-size: 0.9rem;">${err}</div>`;
+              });
+            }
+          }
+
+          messageContainer.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+              <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.1rem;"></i>
+              <div>Ошибка:<br>${errors || 'Неизвестная ошибка'}</div>
+            </div>`;
         }
       })
       .catch(error => {
         console.error('Ошибка:', error);
-        messageContainer.innerHTML = `<div class="error-message">Произошла ошибка при загрузке: ${error.message}</div>`;
+        messageContainer.innerHTML = `
+          <div class="alert alert-danger d-flex align-items-center" role="alert" style="font-size: 0.95rem; padding: 0.75rem;">
+            <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.1rem;"></i>
+            <div>Ошибка загрузки: ${error.message}</div>
+          </div>`;
       });
     });
   }

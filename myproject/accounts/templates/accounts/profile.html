@@ -423,6 +423,10 @@
     font-weight: 600;
   }
 
+  /* Social links */
+  .social-links p { margin-bottom: 8px; }
+  .social-links a { text-decoration: none; color: var(--primary-color); font-weight: 500; }
+
   /* Responsive design */
   @media (max-width: 768px) {
     .sidebar {
@@ -531,6 +535,43 @@
             <p class="profile-phone"><strong>Телефон:</strong> {{ workshop_profile.phone }}</p>
             <p class="profile-description"><strong>Описание:</strong> {{ workshop_profile.description|default:"Не указано" }}</p>
             <p class="profile-working-hours"><strong>Время работы:</strong> {{ workshop_profile.working_hours|default:"Не указано" }}</p>
+
+            <!-- Социальные контакты (если есть showcase) -->
+            {% if workshop_profile.showcase %}
+              <div class="social-links mt-3">
+                {% if workshop_profile.showcase.telegram %}
+                  <p class="telegram">
+                    <strong>Telegram:</strong>
+                    {% if workshop_profile.showcase.telegram|slice:":4" == "http" %}
+                      <a href="{{ workshop_profile.showcase.telegram }}" target="_blank" rel="noopener">{{ workshop_profile.showcase.telegram }}</a>
+                    {% else %}
+                      <a href="https://t.me/{{ workshop_profile.showcase.telegram|urlencode }}" target="_blank" rel="noopener">{{ workshop_profile.showcase.telegram }}</a>
+                    {% endif %}
+                  </p>
+                {% endif %}
+                {% if workshop_profile.showcase.instagram %}
+                  <p class="instagram">
+                    <strong>Instagram:</strong>
+                    {% if workshop_profile.showcase.instagram|slice:":4" == "http" %}
+                      <a href="{{ workshop_profile.showcase.instagram }}" target="_blank" rel="noopener">{{ workshop_profile.showcase.instagram }}</a>
+                    {% else %}
+                      <a href="https://instagram.com/{{ workshop_profile.showcase.instagram|urlencode }}" target="_blank" rel="noopener">{{ workshop_profile.showcase.instagram }}</a>
+                    {% endif %}
+                  </p>
+                {% endif %}
+                {% if workshop_profile.showcase.viber %}
+                  <p class="viber">
+                    <strong>Viber:</strong>
+                    {% if workshop_profile.showcase.viber|slice:":6" == "viber:" or workshop_profile.showcase.viber|slice:":4" == "http" %}
+                      <a href="{{ workshop_profile.showcase.viber }}" target="_blank" rel="noopener">{{ workshop_profile.showcase.viber }}</a>
+                    {% else %}
+                      {{ workshop_profile.showcase.viber }}
+                    {% endif %}
+                  </p>
+                {% endif %}
+              </div>
+            {% endif %}
+
             <p><strong>Сферы деятельности:</strong></p>
             {% if grouped_activities %}
               {% for category, activities in grouped_activities.items %}
@@ -544,6 +585,7 @@
             {% else %}
               <p>Не указано</p>
             {% endif %}
+
             <h4>Услуги и цены</h4>
             {% if workshop_profile.service_prices.exists %}
               {% for category, prices in grouped_prices.items %}
@@ -726,12 +768,27 @@
               <legend>Обложка витрины</legend>
               {{ showcase_form.cover_photo|as_crispy_field }}
             </fieldset>
+
             <fieldset class="mb-4">
               <legend>Информация о студии</legend>
               {{ showcase_form.description|as_crispy_field }}
               {{ showcase_form.phone|as_crispy_field }}
               {{ showcase_form.working_hours|as_crispy_field }}
+
+              <!-- Новые поля соцсетей -->
+              <div class="row g-2">
+                <div class="col-md-4">
+                  {{ showcase_form.viber|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ showcase_form.telegram|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                  {{ showcase_form.instagram|as_crispy_field }}
+                </div>
+              </div>
             </fieldset>
+
             <button type="submit" class="btn btn-primary w-100 mt-3">Сохранить</button>
           </form>
         </div>
@@ -921,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
     submitForm('edit-showcase-form', 'edit-showcase-message', function(data) {
       const fields = {
         '.profile-description': `<strong>Описание:</strong> ${data.description || 'Не указано'}`,
-        '.profile-phone': `<strong>Телефон:</strong> ${data.phone}`,
+        '.profile-phone': `<strong>Телефон:</strong> ${data.phone || 'Не указано'}`,
         '.profile-working-hours': `<strong>Время работы:</strong> ${data.working_hours || 'Не указано'}`
       };
       Object.entries(fields).forEach(([selector, value]) => {
@@ -932,6 +989,73 @@ document.addEventListener('DOMContentLoaded', function() {
           console.error(`Element not found: #profile-details .card-body ${selector}`);
         }
       });
+
+      // Обновление соцсетей (корректно подставляем href, если данные — полная ссылка)
+      function ensureSocialContainer() {
+        let container = document.querySelector('#profile-details .card-body .social-links');
+        if (!container) {
+          container = document.createElement('div');
+          container.className = 'social-links mt-3';
+          document.querySelector('#profile-details .card-body').appendChild(container);
+        }
+        return container;
+      }
+
+      const socialContainer = ensureSocialContainer();
+
+      // Telegram
+      if (data.telegram !== undefined) {
+        let tg = socialContainer.querySelector('.telegram');
+        if (!tg) {
+          tg = document.createElement('p');
+          tg.className = 'telegram';
+          socialContainer.appendChild(tg);
+        }
+        if (data.telegram) {
+          const isLink = data.telegram.slice(0,4) === 'http';
+          const tgHref = isLink ? data.telegram : `https://t.me/${encodeURIComponent(data.telegram)}`;
+          tg.innerHTML = `<strong>Telegram:</strong> <a href="${tgHref}" target="_blank" rel="noopener">${data.telegram}</a>`;
+        } else {
+          tg.innerHTML = `<strong>Telegram:</strong> Не указано`;
+        }
+      }
+
+      // Instagram
+      if (data.instagram !== undefined) {
+        let ig = socialContainer.querySelector('.instagram');
+        if (!ig) {
+          ig = document.createElement('p');
+          ig.className = 'instagram';
+          socialContainer.appendChild(ig);
+        }
+        if (data.instagram) {
+          const isLink = data.instagram.slice(0,4) === 'http';
+          const igHref = isLink ? data.instagram : `https://instagram.com/${encodeURIComponent(data.instagram)}`;
+          ig.innerHTML = `<strong>Instagram:</strong> <a href="${igHref}" target="_blank" rel="noopener">${data.instagram}</a>`;
+        } else {
+          ig.innerHTML = `<strong>Instagram:</strong> Не указано`;
+        }
+      }
+
+      // Viber
+      if (data.viber !== undefined) {
+        let vb = socialContainer.querySelector('.viber');
+        if (!vb) {
+          vb = document.createElement('p');
+          vb.className = 'viber';
+          socialContainer.appendChild(vb);
+        }
+        if (data.viber) {
+          const isViberLink = data.viber.slice(0,6) === 'viber:' || data.viber.slice(0,4) === 'http';
+          if (isViberLink) {
+            vb.innerHTML = `<strong>Viber:</strong> <a href="${data.viber}" target="_blank" rel="noopener">${data.viber}</a>`;
+          } else {
+            vb.innerHTML = `<strong>Viber:</strong> ${data.viber}`;
+          }
+        } else {
+          vb.innerHTML = `<strong>Viber:</strong> Не указано`;
+        }
+      }
     });
 
     // Service Price Form JavaScript
