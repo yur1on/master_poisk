@@ -1,5 +1,3 @@
-from django.db import models
-from accounts.models import WorkshopProfile
 
 # showcase/models.py
 from django.db import models

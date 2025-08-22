@@ -3,30 +3,32 @@
 {% block title %}Витрина {{ workshop.workshop_name }}{% endblock %}
 {% block content %}
 <style>
+/* Глобальные переменные (цвета, тени, радиусы, переходы и т.д.) */
 :root {
-  --primary: #00897b;
-  --primary-light: #26a69a;
-  --primary-dark: #00695c;
-  --secondary: #ff8a65;
-  --accent: #ba68c8;
-  --surface: #ffffff;
-  --background: #f8fafc;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 12px 16px -4px rgba(0, 0, 0, 0.1);
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --transition: all 0.25s ease;
-  --viber: #5947bb;
-  --telegram: #0088cc;
-  --instagram: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-  --whatsapp: #25d366;
+  --primary: #68c70af8;           /* Основной цвет (зелёный) */
+  --primary-light: #26a69a;     /* Светлый оттенок основного */
+  --primary-dark: #00695c;      /* Тёмный оттенок основного */
+  --secondary: #ff8a65;         /* Вторичный цвет (оранжевый) */
+  --accent: #ba68c8;            /* Акцентный цвет (фиолетовый) */
+  --surface: #ffffff;           /* Фон карточек */
+  --background: #f8fafc;        /* Общий фон страницы */
+  --text: #1e293b;              /* Основной цвет текста */
+  --text-muted: #64748b;        /* Второстепенный текст */
+  --border: #e2e8f0;            /* Цвет границ */
+  --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.05);   /* Маленькая тень */
+  --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.08);  /* Средняя тень */
+  --shadow-lg: 0 12px 16px -4px rgba(0, 0, 0, 0.1);  /* Большая тень */
+  --radius-sm: 6px;             /* Маленький радиус скругления */
+  --radius-md: 10px;            /* Средний радиус */
+  --radius-lg: 14px;            /* Большой радиус */
+  --transition: all 0.25s ease; /* Плавные анимации */
+  --viber: #5947bb;             /* Цвет Viber */
+  --telegram: #0088cc;          /* Цвет Telegram */
+  --instagram: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); /* Градиент Instagram */
+  --whatsapp: #25d366;          /* Цвет WhatsApp */
 }
 
+/* Общие стили страницы */
 body {
   background-color: var(--background);
   color: var(--text);
@@ -34,17 +36,20 @@ body {
   line-height: 1.55;
 }
 
+/* Контейнер витрины — ограничивает ширину и отступы */
 .showcase-container {
   max-width: 1280px;
   margin: 1.8rem auto;
   padding: 0 1.25rem;
 }
 
+/* Заголовок витрины */
 .showcase-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
+/* Основной заголовок страницы */
 .showcase-header h1 {
   font-size: 2.25rem;
   font-weight: 800;
@@ -55,6 +60,7 @@ body {
   display: inline-block;
 }
 
+/* Декоративная линия под заголовком */
 .showcase-header h1::after {
   content: '';
   position: absolute;
@@ -67,6 +73,7 @@ body {
   border-radius: 2px;
 }
 
+/* Контейнер баннера (главное изображение) */
 .banner-container {
   position: relative;
   border-radius: var(--radius-lg);
@@ -77,6 +84,7 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Изображение баннера */
 .banner-img {
   width: 100%;
   height: 100%;
@@ -84,10 +92,12 @@ body {
   transition: transform 0.4s ease;
 }
 
+/* Эффект увеличения при наведении */
 .banner-container:hover .banner-img {
   transform: scale(1.02);
 }
 
+/* Полупрозрачная подложка с текстом на баннере */
 .banner-overlay {
   position: absolute;
   bottom: 0;
@@ -104,6 +114,7 @@ body {
   margin-bottom: 0.4rem;
 }
 
+/* Общая карточка контента */
 .content-section {
   background: var(--surface);
   border-radius: var(--radius-lg);
@@ -114,11 +125,13 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Анимация при наведении на карточку */
 .content-section:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
+/* Заголовок секции с иконкой */
 .section-title {
   font-size: 1.35rem;
   font-weight: 700;
@@ -131,11 +144,13 @@ body {
   border-bottom: 1.5px solid var(--primary-light);
 }
 
+/* Иконка в заголовке секции */
 .section-title i {
   color: var(--primary);
   font-size: 1.1rem;
 }
 
+/* Описание — многострочный текст */
 .description-text {
   white-space: pre-wrap;
   color: var(--text-muted);
@@ -143,7 +158,7 @@ body {
   line-height: 1.65;
 }
 
-/* Улучшенные контакты */
+/* Сетка контактов (3 колонки) */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -151,6 +166,7 @@ body {
   margin-top: 1.25rem;
 }
 
+/* Карточка контакта */
 .contact-card {
   background: #f8fafc;
   border-radius: var(--radius-md);
@@ -164,12 +180,14 @@ body {
   height: 100%;
 }
 
+/* Анимация при наведении на карточку контакта */
 .contact-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   border-color: var(--primary-light);
 }
 
+/* Иконка контакта (фон + иконка) */
 .contact-icon {
   background: var(--primary-light);
   color: white;
@@ -184,6 +202,7 @@ body {
   box-shadow: 0 3px 5px rgba(0, 137, 123, 0.15);
 }
 
+/* Текст контакта */
 .contact-info h4 {
   font-size: 0.95rem;
   font-weight: 600;
@@ -199,6 +218,7 @@ body {
   line-height: 1.4;
 }
 
+/* Крупная кнопка звонка */
 .highlight-phone {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
@@ -219,30 +239,34 @@ body {
   text-decoration: none;
 }
 
+/* Анимация при наведении на кнопку звонка */
 .highlight-phone:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 137, 123, 0.25);
   background: linear-gradient(135deg, #00695c, #004d40);
 }
 
+/* Пульсирующая анимация для иконки телефона */
 .highlight-phone i {
   font-size: 1.15rem;
   animation: pulse 2s infinite;
 }
 
+/* Ключевые кадры пульсации */
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-/* Социальные сети */
+/* Секция социальных сетей */
 .social-section {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
   border-top: 1px dashed var(--border);
 }
 
+/* Заголовок секции соцсетей */
 .social-title {
   font-size: 1rem;
   font-weight: 600;
@@ -253,12 +277,14 @@ body {
   gap: 7px;
 }
 
+/* Сетка иконок соцсетей */
 .social-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(46px, 1fr));
   gap: 0.85rem;
 }
 
+/* Иконка соцсети */
 .social-icon {
   display: flex;
   align-items: center;
@@ -274,23 +300,26 @@ body {
   text-decoration: none;
 }
 
+/* Анимация при наведении на иконку соцсети */
 .social-icon:hover {
   transform: translateY(-3px) scale(1.03);
   box-shadow: var(--shadow-md);
 }
 
+/* Цвета для конкретных соцсетей */
 .social-icon.viber { background-color: var(--viber); }
 .social-icon.telegram { background-color: var(--telegram); }
 .social-icon.instagram { background: var(--instagram); }
 .social-icon.whatsapp { background-color: var(--whatsapp); }
 
-/* Менеджеры */
+/* Секция менеджеров */
 .managers-section {
   margin-top: 2rem;
   padding-top: 1.25rem;
   border-top: 1px dashed var(--border);
 }
 
+/* Заголовок секции менеджеров */
 .managers-title {
   font-size: 1rem;
   font-weight: 600;
@@ -301,12 +330,14 @@ body {
   gap: 7px;
 }
 
+/* Сетка менеджеров */
 .managers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.25rem;
 }
 
+/* Карточка менеджера */
 .manager-card {
   background: #f8fafc;
   border-radius: var(--radius-md);
@@ -316,18 +347,21 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Анимация при наведении на карточку менеджера */
 .manager-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: var(--primary-light);
 }
 
+/* Верхняя часть карточки менеджера */
 .manager-header {
   background: var(--primary);
   padding: 0.85rem;
   text-align: center;
 }
 
+/* Аватар менеджера */
 .manager-avatar {
   width: 70px;
   height: 70px;
@@ -342,6 +376,7 @@ body {
   color: var(--primary-dark);
 }
 
+/* Имя менеджера в заголовке */
 .manager-header h4 {
   color: white;
   font-size: 1rem;
@@ -349,10 +384,12 @@ body {
   font-weight: 600;
 }
 
+/* Основная часть карточки менеджера */
 .manager-body {
   padding: 1rem;
 }
 
+/* Должность менеджера */
 .manager-role {
   font-size: 0.85rem;
   color: var(--primary-dark);
@@ -363,12 +400,14 @@ body {
   gap: 5px;
 }
 
+/* Блок контактов менеджера */
 .manager-contact {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-start;
 }
 
+/* Иконка контакта менеджера */
 .manager-contact a {
   display: flex;
   align-items: center;
@@ -383,26 +422,30 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Анимация при наведении на иконку контакта */
 .manager-contact a:hover {
   transform: translateY(-2px) scale(1.04);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+/* Цвета для иконок контактов менеджера */
 .manager-contact a.telegram { background-color: var(--telegram); }
 .manager-contact a.viber { background-color: var(--viber); }
 .manager-contact a.instagram { background: var(--instagram); }
 .manager-contact a.whatsapp { background-color: var(--whatsapp); }
 .manager-contact a.phone { background-color: var(--primary); }
 
-/* Услуги */
+/* Контейнер услуг */
 .services-container {
   margin-top: 1.25rem;
 }
 
+/* Категория услуг */
 .service-category {
   margin-bottom: 1.75rem;
 }
 
+/* Заголовок категории услуг */
 .category-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -415,12 +458,14 @@ body {
   gap: 8px;
 }
 
+/* Сетка услуг */
 .service-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 }
 
+/* Карточка услуги */
 .service-card {
   background: #f8fafc;
   border-radius: var(--radius-md);
@@ -433,12 +478,14 @@ body {
   flex-direction: column;
 }
 
+/* Анимация при наведении на карточку услуги */
 .service-card:hover {
   border-color: var(--primary);
   box-shadow: 0 5px 10px rgba(0, 137, 123, 0.08);
   transform: translateY(-2px);
 }
 
+/* Название услуги */
 .service-name {
   font-weight: 600;
   font-size: 1rem;
@@ -451,6 +498,7 @@ body {
   line-height: 1.3;
 }
 
+/* Маркер перед названием услуги */
 .service-name::before {
   content: "•";
   color: var(--primary);
@@ -459,6 +507,7 @@ body {
   vertical-align: middle;
 }
 
+/* Описание услуги */
 .service-description {
   color: var(--text-muted);
   font-size: 0.85rem;
@@ -471,6 +520,7 @@ body {
   line-height: 1.4;
 }
 
+/* Блок с деталями услуги (длительность и цена) */
 .service-details {
   display: flex;
   justify-content: space-between;
@@ -480,6 +530,7 @@ body {
   margin-top: auto;
 }
 
+/* Длительность услуги */
 .service-duration {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -491,6 +542,7 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Цена услуги */
 .service-price {
   font-weight: 700;
   color: var(--primary-dark);
@@ -503,7 +555,7 @@ body {
   text-align: right;
 }
 
-/* Карта */
+/* Контейнер карты */
 .map-container {
   height: 260px;
   border-radius: var(--radius-md);
@@ -514,6 +566,7 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Заглушка для карты (если адрес не указан) */
 .map-placeholder {
   height: 100%;
   display: flex;
@@ -526,12 +579,13 @@ body {
   gap: 0.8rem;
 }
 
+/* Иконка на заглушке карты */
 .map-placeholder i {
   font-size: 2.8rem;
   color: #cbd5e1;
 }
 
-/* Админ-действия */
+/* Блок действий владельца */
 .owner-actions {
   background: var(--surface);
   border-radius: var(--radius-lg);
@@ -542,6 +596,7 @@ body {
   border: 1px solid var(--border);
 }
 
+/* Кнопка редактирования витрины */
 .btn-edit-showcase {
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
@@ -558,16 +613,18 @@ body {
   text-decoration: none;
 }
 
+/* Анимация при наведении на кнопку редактирования */
 .btn-edit-showcase:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 137, 123, 0.25);
 }
 
-/* Галерея */
+/* Секция галереи */
 .gallery-section {
   margin-top: 1.75rem;
 }
 
+/* Элемент галереи */
 .gallery-item {
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -577,11 +634,13 @@ body {
   transition: var(--transition);
 }
 
+/* Анимация при наведении на элемент галереи */
 .gallery-item:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
+/* Изображение в галерее */
 .gallery-img {
   width: 100%;
   height: 100%;
@@ -589,10 +648,12 @@ body {
   transition: transform 0.4s ease;
 }
 
+/* Эффект увеличения при наведении */
 .gallery-item:hover .gallery-img {
   transform: scale(1.03);
 }
 
+/* Оверлей с описанием на изображении */
 .gallery-overlay {
   position: absolute;
   bottom: 0;
@@ -606,11 +667,13 @@ body {
   transition: var(--transition);
 }
 
+/* Появление оверлея при наведении */
 .gallery-item:hover .gallery-overlay {
   transform: translateY(0);
   opacity: 1;
 }
 
+/* Кнопка удаления изображения */
 .delete-btn {
   position: absolute;
   top: 8px;
@@ -628,11 +691,12 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
+/* Появление кнопки удаления при наведении */
 .gallery-item:hover .delete-btn {
   opacity: 1;
 }
 
-/* Адаптивность */
+/* Адаптивность для планшетов */
 @media (max-width: 768px) {
   .banner-container {
     height: 280px;
@@ -646,44 +710,54 @@ body {
     padding: 1.5rem;
   }
 
+  /* 3 колонки для контактов на планшетах */
   .contact-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  /* 4 колонки для соцсетей на планшетах */
   .social-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 
+  /* 2 колонки для менеджеров на планшетах */
   .managers-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* Адаптивная сетка услуг */
   .service-list {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
 }
 
+/* Адаптивность для мобильных устройств */
 @media (max-width: 576px) {
   .banner-container {
     height: 240px;
   }
 
+  /* 2 колонки для контактов на мобильных */
   .contact-grid {
     grid-template-columns: 1fr 1fr;
   }
 
+  /* 3 колонки для соцсетей на мобильных */
   .social-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  /* Одна колонка для менеджеров на мобильных */
   .managers-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Одна колонка для услуг на мобильных */
   .service-list {
     grid-template-columns: 1fr;
   }
 
+  /* Уменьшенный размер заголовков */
   .section-title {
     font-size: 1.25rem;
   }
@@ -757,11 +831,11 @@ body {
           <div class="social-grid">
             {% if showcase.viber %}
               {% if showcase.viber|slice:":6" == "viber:" or showcase.viber|slice:":4" == "http" %}
-                <a href="{{ showcase.viber }}" target="_blank" rel="noopener" class="social-icon viber" title="Viber">
+                <a href="{{ showcase.viber }}" target="_blank" rel="noopener" class="social-icon viber" title="Написать в Viber">
                   <i class="fab fa-viber"></i>
                 </a>
               {% else %}
-                <a href="viber://chat?number={{ showcase.viber|urlencode }}" target="_blank" class="social-icon viber" title="Viber">
+                <a href="viber://chat?number={{ showcase.viber|urlencode }}" target="_blank" class="social-icon viber" title="Написать в Viber">
                   <i class="fab fa-viber"></i>
                 </a>
               {% endif %}
@@ -769,11 +843,11 @@ body {
 
             {% if showcase.telegram %}
               {% if showcase.telegram|slice:":4" == "http" %}
-                <a href="{{ showcase.telegram }}" target="_blank" rel="noopener" class="social-icon telegram" title="Telegram">
+                <a href="{{ showcase.telegram }}" target="_blank" rel="noopener" class="social-icon telegram" title="Написать в Telegram">
                   <i class="fab fa-telegram"></i>
                 </a>
               {% else %}
-                <a href="https://t.me/{{ showcase.telegram|urlencode }}" target="_blank" class="social-icon telegram" title="Telegram">
+                <a href="https://t.me/{{ showcase.telegram|urlencode }}" target="_blank" class="social-icon telegram" title="Написать в Telegram">
                   <i class="fab fa-telegram"></i>
                 </a>
               {% endif %}
@@ -781,18 +855,18 @@ body {
 
             {% if showcase.instagram %}
               {% if showcase.instagram|slice:":4" == "http" %}
-                <a href="{{ showcase.instagram }}" target="_blank" rel="noopener" class="social-icon instagram" title="Instagram">
+                <a href="{{ showcase.instagram }}" target="_blank" rel="noopener" class="social-icon instagram" title="Instagram профиль">
                   <i class="fab fa-instagram"></i>
                 </a>
               {% else %}
-                <a href="https://instagram.com/{{ showcase.instagram|urlencode }}" target="_blank" class="social-icon instagram" title="Instagram">
+                <a href="https://instagram.com/{{ showcase.instagram|urlencode }}" target="_blank" class="social-icon instagram" title="Instagram профиль">
                   <i class="fab fa-instagram"></i>
                 </a>
               {% endif %}
             {% endif %}
 
             {% if showcase.whatsapp %}
-              <a href="https://wa.me/{{ showcase.whatsapp|urlencode }}" target="_blank" class="social-icon whatsapp" title="WhatsApp">
+              <a href="https://wa.me/{{ showcase.whatsapp|urlencode }}" target="_blank" class="social-icon whatsapp" title="Написать в WhatsApp">
                 <i class="fab fa-whatsapp"></i>
               </a>
             {% endif %}
