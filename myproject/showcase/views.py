@@ -9,6 +9,20 @@ from .forms import ShowcaseForm, GalleryImageForm
 from collections import OrderedDict
 import logging
 import os
+from django.http import JsonResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
+from .models import Showcase, GalleryImage, Specialist
+from .forms import ShowcaseForm, GalleryImageForm, SpecialistForm
+from accounts.models import WorkshopProfile, ServicePrice
+from collections import OrderedDict
+import logging
+
+logger = logging.getLogger(__name__)
+
+import os
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -113,15 +127,20 @@ def upload_gallery_image(request):
             })
     else:
         return redirect('showcase:view_showcase', username=request.user.username)
+
+
 def view_showcase(request, username):
     user = get_object_or_404(User, username=username)
     is_owner = request.user.is_authenticated and request.user == user
+
+    # Получаем WorkshopProfile
     try:
         workshop = user.workshopprofile
     except WorkshopProfile.DoesNotExist:
         logger.error(f"WorkshopProfile не найден для пользователя {username}")
         return render(request, 'showcase/not_found.html', {'username': username})
 
+    # Получаем Showcase или перенаправляем владельца на создание/редактирование
     try:
         showcase = workshop.showcase
     except Showcase.DoesNotExist:
@@ -131,7 +150,13 @@ def view_showcase(request, username):
         logger.error(f"Витрина не найдена для пользователя {username}")
         return render(request, 'showcase/not_found.html', {'username': username})
 
+    # Галерея
     gallery = showcase.gallery_images.all()
+
+    # Специалисты — фильтруем только активных и сортируем по полю order (и далее по фамилии/имени)
+    specialists = showcase.specialists.filter(is_active=True).order_by('order', 'last_name', 'first_name')
+
+    # Цены и группировка (как было)
     prices = ServicePrice.objects.filter(workshop=workshop)
     grouped_prices = OrderedDict()
     CATEGORY_TRANSLATIONS = {
@@ -158,11 +183,11 @@ def view_showcase(request, username):
         'workshop': workshop,
         'showcase': showcase,
         'gallery': gallery,
+        'specialists': specialists,         # <-- добавлено
         'is_owner': is_owner,
         'grouped_prices': grouped_prices,
         'upload_form': upload_form
     })
-
 
 @login_required
 @require_POST
@@ -193,3 +218,188 @@ def delete_image(request, image_id):
         if is_ajax:
             return JsonResponse({'success': False, 'error': f'Ошибка сервера: {str(e)}'}, status=500)
         return redirect('accounts:profile')
+
+
+# --- Public list/detail (публичные страницы для посетителей) ---
+def specialists_list(request, username):
+    """Публичная страница: список специалистов витрины пользователя"""
+    user = get_object_or_404(User, username=username)
+    try:
+        workshop = user.workshopprofile
+        showcase = workshop.showcase
+    except (WorkshopProfile.DoesNotExist, Showcase.DoesNotExist):
+        return render(request, 'showcase/not_found.html', {'username': username})
+
+    specialists = showcase.specialists.filter(is_active=True).order_by('order', 'last_name', 'first_name')
+
+    # пагинация (опционально)
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    paginator = Paginator(specialists, 9)
+    page = request.GET.get('page', 1)
+    try:
+        specialists_page = paginator.page(page)
+    except PageNotAnInteger:
+        specialists_page = paginator.page(1)
+    except EmptyPage:
+        specialists_page = paginator.page(paginator.num_pages)
+
+    return render(request, 'showcase/specialists_list.html', {
+        'workshop': workshop,
+        'showcase': showcase,
+        'specialists': specialists_page,
+        'paginator': paginator,
+        'page_obj': specialists_page,
+        'is_owner': request.user.is_authenticated and request.user == user
+    })
+
+
+def specialist_detail(request, username, pk):
+    """Публичная страница: подробная карточка специалиста"""
+    user = get_object_or_404(User, username=username)
+    try:
+        workshop = user.workshopprofile
+        showcase = workshop.showcase
+    except (WorkshopProfile.DoesNotExist, Showcase.DoesNotExist):
+        return render(request, 'showcase/not_found.html', {'username': username})
+
+    specialist = get_object_or_404(Specialist, pk=pk, showcase=showcase)
+
+    return render(request, 'showcase/specialist_detail.html', {
+        'workshop': workshop,
+        'showcase': showcase,
+        'specialist': specialist,
+        'is_owner': request.user.is_authenticated and request.user == user
+    })
+
+
+# --- Management (только владелец) ---
+@login_required
+def specialists_manage(request):
+    """
+    Страница управления специалистами (отдельная страница,
+    доступна только владельцу WorkshopProfile).
+    """
+    try:
+        workshop = request.user.workshopprofile
+    except WorkshopProfile.DoesNotExist:
+        return redirect('accounts:profile')
+
+    showcase, _ = Showcase.objects.get_or_create(workshop=workshop)
+    specialists = showcase.specialists.all().order_by('order', 'last_name', 'first_name')
+    form = SpecialistForm()
+    return render(request, 'showcase/specialists_manage.html', {
+        'workshop': workshop,
+        'showcase': showcase,
+        'specialists': specialists,
+        'form': form,
+        'is_owner': True
+    })
+
+
+@login_required
+@require_POST
+def specialist_create(request):
+    """Создать специалиста (POST). Возвращает JSON при AJAX, иначе редирект."""
+    try:
+        workshop = request.user.workshopprofile
+        showcase = workshop.showcase
+    except (WorkshopProfile.DoesNotExist, Showcase.DoesNotExist):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Workshop not found'}, status=400)
+        return redirect('accounts:profile')
+
+    form = SpecialistForm(request.POST, request.FILES)
+    if form.is_valid():
+        spec = form.save(commit=False)
+        spec.showcase = showcase
+        spec.save()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'id': spec.id,
+                'first_name': spec.first_name,
+                'last_name': spec.last_name,
+                'position': spec.position,
+                'photo_url': spec.photo.url if spec.photo else '',
+                'phone': spec.phone,
+                'bio': spec.bio,
+                'is_active': spec.is_active,
+                'order': spec.order
+            })
+        return redirect('showcase:specialists_manage')
+    else:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        # при обычном POST — отобразим форму со ошибками
+        specialists = showcase.specialists.all().order_by('order')
+        return render(request, 'showcase/specialists_manage.html', {
+            'workshop': workshop,
+            'showcase': showcase,
+            'specialists': specialists,
+            'form': form,
+            'is_owner': True
+        })
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse, HttpResponseForbidden
+from .models import Specialist
+from .forms import SpecialistForm
+
+
+@login_required
+def specialist_edit(request, pk):
+    """
+    Редактирование специалиста.
+    - GET → отрисовывает форму редактирования
+    - POST → сохраняет изменения
+    - Если запрос AJAX → возвращает JSON
+    """
+    spec = get_object_or_404(Specialist, pk=pk)
+
+    # проверка прав
+    if spec.showcase.workshop.user != request.user:
+        return HttpResponseForbidden('Нет доступа')
+
+    form = SpecialistForm(request.POST or None, request.FILES or None, instance=spec)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'id': spec.pk})
+            return redirect('showcase:specialists_manage')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    # GET или невалидная форма (обычный рендер)
+    return render(request, 'showcase/specialist_edit.html', {
+        'form': form,
+        'specialist': spec,
+        'is_owner': True,
+    })
+
+from django.contrib import messages
+
+@login_required
+@require_POST
+def specialist_delete(request, pk):
+    """Удаление специалиста через POST, с редиректом."""
+    spec = get_object_or_404(Specialist, pk=pk)
+    if spec.showcase.workshop.user != request.user:
+        messages.error(request, "Нет доступа")
+        return redirect('showcase:view_showcase', username=spec.showcase.workshop.user.username)
+
+    try:
+        photo_path = spec.photo.path if spec.photo else None
+        spec.delete()
+        if photo_path and os.path.exists(photo_path):
+            os.remove(photo_path)
+        messages.success(request, "Специалист успешно удалён")
+        return redirect('showcase:view_showcase', username=request.user.username)
+    except Exception as e:
+        logger.error(f"Ошибка при удалении специалиста {pk}: {e}")
+        messages.error(request, "Ошибка сервера")
+        return redirect('showcase:view_showcase', username=request.user.username)

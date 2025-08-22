@@ -126,3 +126,40 @@ class GalleryImageForm(forms.ModelForm):
             except Exception as e:
                 raise forms.ValidationError(f'Загруженный файл не является изображением или повреждён: {str(e)}')
         return image
+
+from django import forms
+from .models import Specialist
+from django.core.validators import FileExtensionValidator
+from PIL import Image
+
+class SpecialistForm(forms.ModelForm):
+    class Meta:
+        model = Specialist
+        fields = ['first_name', 'last_name', 'position', 'photo', 'phone', 'bio', 'is_active', 'order']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'position': forms.TextInput(attrs={'class': 'form-control'}),
+            'photo': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['photo'].validators.append(FileExtensionValidator(allowed_extensions=['jpg','jpeg','png','webp','gif']))
+
+    def clean_photo(self):
+        photo = self.cleaned_data.get('photo')
+        if photo:
+            if photo.size > 5 * 1024 * 1024:
+                raise forms.ValidationError('Размер изображения не должен превышать 5 МБ.')
+            try:
+                img = Image.open(photo)
+                img.verify()
+            except Exception:
+                raise forms.ValidationError('Загруженный файл не является корректным изображением.')
+            photo.seek(0)
+        return photo

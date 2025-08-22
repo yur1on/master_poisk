@@ -361,3 +361,4 @@ def edit_prices(request):
             })
     else:
         return redirect('accounts:profile')
+

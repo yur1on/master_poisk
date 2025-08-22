@@ -762,6 +762,187 @@ body {
     font-size: 1.25rem;
   }
 }
+
+
+  /* Секция специалистов */
+  .content-section {
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-bottom: 30px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .section-title i {
+    margin-right: 10px;
+    color: #4a5568;
+  }
+
+  /* Сетка карточек */
+  .managers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  /* Карточка специалиста */
+  .manager-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .manager-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  .manager-header {
+    padding: 15px;
+    text-align: center;
+    background: #2d3748;
+    color: #fff;
+  }
+
+  .manager-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .manager-avatar div {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.12);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+  }
+
+  .manager-header h4 {
+    margin: 10px 0 5px 0;
+  }
+
+  .manager-header div {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .manager-body {
+    padding: 15px;
+    text-align: center;
+  }
+
+  .manager-body .small-muted {
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 10px;
+  }
+
+  .manager-contact a {
+    margin: 0 5px;
+    color: #2b6cb0;
+    transition: color 0.2s ease;
+  }
+
+  .manager-contact a:hover {
+    color: #2c5282;
+  }
+
+  .manager-contact i {
+    font-size: 1.1rem;
+  }
+
+/* Контейнер категории услуг */
+.service-category {
+  margin-bottom: 30px;
+}
+
+/* Заголовок категории */
+.category-title {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+}
+
+/* Список карточек услуг */
+.service-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Карточка услуги */
+.service-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  width: calc(33.333% - 10px); /* 3 карточки в ряд */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.service-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Название услуги */
+.service-name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 5px;
+  color: #222;
+}
+
+/* Описание услуги */
+.service-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+  min-height: 40px; /* чтобы карточки были одинаковой высоты */
+}
+
+/* Детали услуги (время и цена) */
+.service-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.service-duration i,
+.service-price {
+  color: #555;
+}
+
+/* Скрытые карточки */
+.extra-service {
+  display: none;
+}
+
+/* Кнопка "Показать все" */
+.show-more-service {
+  cursor: pointer;
+}
+
+
 </style>
 
 <div class="showcase-container">
@@ -878,36 +1059,137 @@ body {
         </a>
       </div>
 
-      <div class="content-section">
-        <h2 class="section-title"><i class="fas fa-tags"></i> Услуги и цены</h2>
-        {% if grouped_prices %}
-          {% for category, prices in grouped_prices.items %}
-            <div class="service-category">
-              <h3 class="category-title"><i class="fas fa-spa"></i> {{ category }}</h3>
-              <div class="service-list">
-                {% for price in prices %}
-                  <div class="service-card">
-                    <div class="service-name">{{ price.service_name }}</div>
-                    <div class="service-description">
-                      {{ price.description|default:"" }}
-                    </div>
-                    <div class="service-details">
-                      <div class="service-duration">
-                        <i class="far fa-clock"></i> {{ price.duration|format_duration|default:"–" }}
-                      </div>
-                      <div class="service-price">
-                        {{ price.price }} ₽
-                      </div>
-                    </div>
-                  </div>
-                {% endfor %}
+
+<div class="content-section">
+  <h2 class="section-title">
+    <i class="fas fa-user-friends"></i> Наши специалисты
+    {% if is_owner %}
+      <a href="{% url 'showcase:specialists_manage' %}" class="btn btn-sm btn-success" style="margin-left:10px;">
+        <i class="fas fa-plus"></i> Добавить
+      </a>
+    {% endif %}
+  </h2>
+
+  {% if specialists %}
+    <div class="managers-grid">
+      {% for spec in specialists %}
+        <div class="manager-card{% if forloop.counter > 3 %} extra-spec{% endif %}" {% if forloop.counter > 3 %}style="display:none"{% endif %}>
+          <div class="manager-header">
+            <div class="manager-avatar">
+              {% if spec.photo %}
+                <img src="{{ spec.photo.url }}" alt="{{ spec.first_name }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+              {% else %}
+                <div style="width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.12);">
+                  <span style="font-size:1.4rem;color:white;font-weight:700;">
+                    {{ spec.first_name|default:"?"|slice:":1" }}{% if spec.last_name %}{{ spec.last_name|slice:":1" }}{% endif %}
+                  </span>
+                </div>
+              {% endif %}
+            </div>
+
+            <h4>{{ spec.first_name }} {% if spec.last_name %}{{ spec.last_name }}{% endif %}</h4>
+            {% if spec.position %}
+              <div style="color:rgba(255,255,255,0.9)">{{ spec.position }}</div>
+            {% endif %}
+          </div>
+
+          <div class="manager-body">
+            {% if spec.bio %}
+              <p class="small-muted">{{ spec.bio|truncatechars:40 }}</p>
+            {% endif %}
+
+            <div class="manager-contact">
+              {% if spec.phone %}
+                <a class="phone" href="tel:{{ spec.phone }}" title="Позвонить"><i class="fas fa-phone"></i></a>
+              {% endif %}
+              <a href="{% url 'showcase:specialist_detail' username=workshop.user.username pk=spec.id %}" title="Подробнее">
+                <i class="fas fa-info-circle"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if specialists|length > 3 %}
+      <div class="text-center mt-3">
+        <a href="#" id="show-more-spec" class="btn btn-sm btn-outline-primary">Показать всех</a>
+      </div>
+    {% endif %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('show-more-spec');
+        if (btn) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.extra-spec').forEach(el => el.style.display = 'block');
+            btn.style.display = 'none';
+          });
+        }
+      });
+    </script>
+
+  {% else %}
+    <div class="text-center py-4" style="background: #f8fafc; border-radius: 12px; border: 1px dashed var(--border);">
+      <i class="fas fa-user-friends" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 0.5rem;"></i>
+      <p class="text-muted" style="font-size: 0.95rem;">Специалисты пока не добавлены.</p>
+      {% if is_owner %}
+        <a href="{% url 'showcase:specialists_manage' %}" class="btn btn-sm btn-primary mt-2">Добавить специалиста</a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+
+
+
+<div class="content-section">
+  <h2 class="section-title"><i class="fas fa-tags"></i> Услуги и цены</h2>
+
+  {% if grouped_prices %}
+    {% for category, prices in grouped_prices.items %}
+      <div class="service-category">
+        <h3 class="category-title"><i class="fas fa-spa"></i> {{ category }}</h3>
+        <div class="service-list">
+          {% for price in prices %}
+            <div class="service-card{% if forloop.counter > 3 %} extra-service{% endif %}" {% if forloop.counter > 3 %}style="display:none"{% endif %}>
+              <div class="service-name">{{ price.service_name }}</div>
+              <div class="service-description">{{ price.description|default:"" }}</div>
+              <div class="service-details">
+                <div class="service-duration"><i class="far fa-clock"></i> {{ price.duration|format_duration|default:"–" }}</div>
+                <div class="service-price">{{ price.price }} ₽</div>
               </div>
             </div>
           {% endfor %}
-        {% else %}
-          <p class="text-muted text-center py-3">Цены на услуги не указаны.</p>
+        </div>
+
+        {% if prices|length > 3 %}
+          <div class="text-center mt-2">
+            <a href="#" class="btn btn-sm btn-outline-primary show-more-service">Показать все</a>
+          </div>
         {% endif %}
       </div>
+    {% endfor %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.show-more-service').forEach(function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const category = btn.closest('.service-category');
+            category.querySelectorAll('.extra-service').forEach(el => el.style.display = 'block');
+            btn.style.display = 'none';
+          });
+        });
+      });
+    </script>
+
+  {% else %}
+    <p class="text-muted text-center py-3">Цены на услуги не указаны.</p>
+  {% endif %}
+</div>
+
 
       <div class="content-section">
         <h2 class="section-title"><i class="fas fa-images"></i> Наша галерея</h2>

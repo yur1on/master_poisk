@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Редактировать специалиста — {{ specialist.first_name }} {{ specialist.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Редактировать специалиста</h5>
+          <a href="{% url 'showcase:specialists_manage' %}" class="btn btn-sm btn-outline-secondary">← Назад к списку</a>
+        </div>
+
+        <div class="card-body">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <form method="post" enctype="multipart/form-data" action="">
+            {% csrf_token %}
+
+            <!-- Текущее фото -->
+            {% if specialist.photo %}
+              <div class="mb-3 text-center">
+                <label class="form-label d-block">Текущее фото</label>
+                <img src="{{ specialist.photo.url }}" alt="{{ specialist.first_name }}" style="max-width:200px; max-height:200px; object-fit:cover; border-radius:8px;">
+              </div>
+            {% endif %}
+
+            <div class="mb-3">
+              {{ form.first_name.label_tag }}
+              {{ form.first_name }}
+              {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.last_name.label_tag }}
+              {{ form.last_name }}
+              {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.position.label_tag }}
+              {{ form.position }}
+              {% if form.position.errors %}<div class="text-danger small mt-1">{{ form.position.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.photo.label_tag }}
+              {{ form.photo }}
+              {% if form.photo.errors %}<div class="text-danger small mt-1">{{ form.photo.errors }}</div>{% endif %}
+              <div class="form-text">Загрузите новое фото, чтобы заменить текущее. Максимум 5 МБ.</div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.phone.label_tag }}
+              {{ form.phone }}
+              {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.bio.label_tag }}
+              {{ form.bio }}
+              {% if form.bio.errors %}<div class="text-danger small mt-1">{{ form.bio.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-check mb-3">
+              {{ form.is_active }} {{ form.is_active.label_tag }}
+              {% if form.is_active.errors %}<div class="text-danger small mt-1">{{ form.is_active.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.order.label_tag }}
+              {{ form.order }}
+              {% if form.order.errors %}<div class="text-danger small mt-1">{{ form.order.errors }}</div>{% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+              <a href="{% url 'showcase:specialist_detail' username=specialist.showcase.workshop.user.username pk=specialist.id %}" class="btn btn-outline-secondary">Отмена</a>
+
+              <!-- Кнопка удаления -->
+              <form method="post" action="{% url 'showcase:specialist_delete' pk=specialist.id %}" style="margin-left:auto;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить специалиста?');">Удалить</button>
+              </form>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -32,3 +32,27 @@ class GalleryImage(models.Model):
 
     def __str__(self):
         return f"Изображение для {self.showcase.workshop.workshop_name}"
+
+
+from django.utils import timezone
+
+class Specialist(models.Model):
+    showcase = models.ForeignKey(Showcase, on_delete=models.CASCADE, related_name='specialists')
+    first_name = models.CharField("Имя", max_length=150)
+    last_name = models.CharField("Фамилия", max_length=150, blank=True)
+    position = models.CharField("Должность", max_length=150, blank=True)
+    photo = models.ImageField("Фото", upload_to='showcase/specialists/', blank=True, null=True)
+    phone = models.CharField("Телефон", max_length=30, blank=True)
+    bio = models.TextField("О специалисте", blank=True)
+    is_active = models.BooleanField("Показывать на витрине", default=True)
+    order = models.PositiveIntegerField("Порядок (меньше — выше)", default=100)
+    created_at = models.DateTimeField("Создан", default=timezone.now)
+    updated_at = models.DateTimeField("Обновлён", auto_now=True)
+
+    class Meta:
+        verbose_name = "Специалист"
+        verbose_name_plural = "Специалисты"
+        ordering = ['order', 'last_name', 'first_name']
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}".strip()
