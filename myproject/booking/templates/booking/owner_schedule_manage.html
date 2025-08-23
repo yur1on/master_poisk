@@ -1,0 +1,26 @@
+<!-- booking/templates/booking/owner_schedule_manage.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Расписание для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+<form method="get">
+    <input type="month" name="month" value="{{ month }}">
+    <button type="submit">Показать</button>
+</form>
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+    <div>
+        {{ form }}
+    </div>
+    {% endfor %}
+    <button type="submit">Сохранить</button>
+</form>
+<h3>Текущее расписание</h3>
+<ul>
+    {% for avail in availabilities %}
+    <li>{{ avail.date }} {{ avail.start_time }} - {{ avail.end_time }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,17 @@
+<!-- booking/templates/booking/client_my_appointments.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Мои записи</h2>
+<ul>
+    {% for appointment in appointments %}
+    <li>
+        {{ appointment.specialist }} - {{ appointment.availability.date }} {{ appointment.availability.start_time }}
+        ({{ appointment.status }})
+        {% if appointment.status != 'cancelled' and appointment.availability.date >= today %}
+        <a href="{% url 'booking:client_cancel_appointment' pk=appointment.pk %}">Отменить</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

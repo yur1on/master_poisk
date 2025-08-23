@@ -1,15 +1,4 @@
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from accounts.models import WorkshopProfile, ServicePrice
-from .models import Showcase, GalleryImage
-from .forms import ShowcaseForm, GalleryImageForm
-from collections import OrderedDict
-import logging
-import os
-from django.http import JsonResponse, HttpResponseForbidden
+
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404

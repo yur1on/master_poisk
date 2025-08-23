@@ -1,0 +1,27 @@
+<!-- booking/templates/booking/client_book_appointment.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Запись к {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+<form method="get">
+    <input type="date" name="date" value="{{ selected_date }}">
+    <button type="submit">Показать доступные времена</button>
+</form>
+{% if availabilities %}
+<form method="post">
+    {% csrf_token %}
+    <select name="availability">
+        {% for avail in availabilities %}
+        <option value="{{ avail.pk }}">{{ avail.start_time }} - {{ avail.end_time }}</option>
+        {% endfor %}
+    </select>
+    {{ form.as_p }}
+    <button type="submit">Записаться</button>
+</form>
+{% else %}
+<p>Нет доступных времен на эту дату.</p>
+{% endif %}
+{% if error %}
+<p>{{ error }}</p>
+{% endif %}
+{% endblock %}

@@ -120,4 +120,7 @@ body { background-color: var(--background); color: var(--text); font-family: 'In
     </div>
   </div>
 </div>
+{% if not is_owner %}
+<a href="{% url 'booking:client_book_appointment' pk=specialist.pk %}">Записаться</a>
+{% endif %}
 {% endblock %}

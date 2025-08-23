@@ -1,0 +1,15 @@
+<!-- booking/templates/booking/owner_specialists_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Специалисты вашей студии</h2>
+<ul>
+    {% for specialist in specialists %}
+    <li>
+        {{ specialist.first_name }} {{ specialist.last_name }}
+        <a href="{% url 'booking:owner_schedule_manage' pk=specialist.pk %}">Управление расписанием</a>
+        <a href="{% url 'booking:owner_appointments_list' pk=specialist.pk %}">Записи</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -503,6 +503,10 @@
       <a href="#" class="prices-btn" data-section="edit-prices"><i class="fas fa-dollar-sign"></i> Редактировать цены</a>
       <a href="#" class="showcase-btn" data-section="edit-showcase"><i class="fas fa-store"></i> Редактировать витрину</a>
     {% endif %}
+    {% if is_workshop %}
+
+    <button onclick="window.location.href='{% url 'booking:owner_specialists_list' %}'">Специалисты</button>
+    {% endif %}
   </div>
 
   <!-- Content -->
@@ -520,6 +524,9 @@
             <p class="profile-email"><strong>Email:</strong> {{ user.email }}</p>
             <p class="profile-phone"><strong>Телефон:</strong> {{ client_profile.phone }}</p>
             <p class="profile-city"><strong>Город:</strong> {{ client_profile.city|default:"Не указано" }}</p>
+            {% if is_client %}
+<a href="{% url 'booking:client_my_appointments' %}">Мои записи</a>
+{% endif %}
           </div>
         </div>
       {% elif is_workshop %}

@@ -1141,7 +1141,9 @@ body {
   {% endif %}
 </div>
 
-
+{% if is_owner %}
+<a href="{% url 'booking:owner_specialists_list' %}">Управление расписаниями специалистов</a>
+{% endif %}
 
 
 <div class="content-section">

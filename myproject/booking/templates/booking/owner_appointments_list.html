@@ -1,0 +1,18 @@
+<!-- booking/templates/booking/owner_appointments_list.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Записи для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+<ul>
+    {% for appointment in appointments %}
+    <li>
+        {{ appointment.client }} - {{ appointment.availability.date }} {{ appointment.availability.start_time }}
+        ({{ appointment.status }})
+        {% if appointment.status == 'pending' %}
+        <a href="{% url 'booking:owner_confirm_appointment' pk=appointment.pk %}">Подтвердить</a>
+        {% endif %}
+        <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}">Отменить</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
