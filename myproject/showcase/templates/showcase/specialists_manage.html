@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Управление специалистами{% endblock %}
 
 {% block content %}
-
-
 <style>
   :root {
     --primary: #4361ee;
@@ -286,6 +285,22 @@
     margin-top: 0.25rem;
   }
 
+  .specialist-services {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .service-badge {
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
   .specialist-actions {
     display: flex;
     gap: 0.75rem;
@@ -373,6 +388,29 @@
     color: var(--primary);
   }
 
+  .form-check-input {
+    margin-top: 0.3rem;
+  }
+
+  .form-check-label {
+    margin-left: 0.5rem;
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  .checkbox-group {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .checkbox-group .form-check {
+    margin-bottom: 0.5rem;
+  }
+
   @media (max-width: 992px) {
     .specialist-actions {
       opacity: 1;
@@ -422,7 +460,6 @@
   }
 </style>
 
-
 <div class="container my-5 specialists-container">
   <div class="page-header">
     <h1 class="page-title">Управление специалистами — <span class="workshop-name">{{ workshop.workshop_name }}</span></h1>
@@ -432,131 +469,70 @@
     <div class="col-lg-5">
       <div class="panel">
         <div class="panel-header">
-          <h3 class="panel-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M16 12.996c0 .554-.449 1.004-1.003 1.004H8.003c-.554 0-1.003-.45-1.003-1.004V12c0-2.757 2.243-5 5-5s5 2.243 5 5v.996zM8 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-              <path d="M13.981 14v.023c0 .553-.45 1.004-1.004 1.004H8.003c-.554 0-1.004-.45-1.004-1.004V14c0-2.757 2.243-5 5-5s5 2.243 5 5z"/>
-            </svg>
-            Добавить специалиста
-          </h3>
+          <h3 class="panel-title">Добавить специалиста</h3>
         </div>
         <div class="panel-body">
           {% if form.non_field_errors %}
-          <div class="form-errors">
-            <ul class="error-list">
-              {% for error in form.non_field_errors %}
-                <li class="error-item">{{ error }}</li>
-              {% endfor %}
-            </ul>
-          </div>
+            <div class="form-errors">
+              <ul class="error-list">
+                {% for error in form.non_field_errors %}
+                  <li class="error-item">{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
           {% endif %}
 
           <form method="post" enctype="multipart/form-data" action="{% url 'showcase:specialist_create' %}">
             {% csrf_token %}
-
-            <div class="form-group">
-              <label for="{{ form.first_name.id_for_label }}" class="form-label">Имя</label>
+            {{ form.media }}
+            <div class="mb-2">
+              <label>Имя</label>
               {{ form.first_name }}
-              {% if form.first_name.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.first_name.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.first_name.errors }}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.last_name.id_for_label }}" class="form-label">Фамилия</label>
+            <div class="mb-2">
+              <label>Фамилия</label>
               {{ form.last_name }}
-              {% if form.last_name.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.last_name.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.last_name.errors }}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.position.id_for_label }}" class="form-label">Должность</label>
+            <div class="mb-2">
+              <label>Должность</label>
               {{ form.position }}
-              {% if form.position.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.position.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.position.errors }}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.photo.id_for_label }}" class="form-label">Фото</label>
+            <div class="mb-2">
+              <label>Фото</label>
               {{ form.photo }}
-              {% if form.photo.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.photo.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.photo.errors }}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.phone.id_for_label }}" class="form-label">Телефон</label>
+            <div class="mb-2">
+              <label>Телефон</label>
               {{ form.phone }}
-              {% if form.phone.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.phone.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.phone.errors }}
             </div>
-
-            <div class="form-group">
-              <label for="{{ form.bio.id_for_label }}" class="form-label">Биография</label>
+            <div class="mb-2">
+              <label>О специалисте</label>
               {{ form.bio }}
-              {% if form.bio.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.bio.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.bio.errors }}
             </div>
 
-            <div class="form-group form-check">
-              {{ form.is_active }}
-              <label for="{{ form.is_active.id_for_label }}" class="form-check-label">Активен</label>
-              {% if form.is_active.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.is_active.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+            <div class="mb-2">
+              <label>Услуги (отметьте те, которые выполняет специалист)</label>
+              {{ form.services }}
+              {{ form.services.errors }}
             </div>
 
-            <div class="form-group">
-              <label for="{{ form.order.id_for_label }}" class="form-label">Порядок отображения</label>
+            <div class="form-check mb-2">
+              {{ form.is_active }} <label class="form-check-label">Активен</label>
+            </div>
+
+            <div class="mb-3">
+              <label>Порядок</label>
               {{ form.order }}
-              {% if form.order.errors %}
-                <ul class="error-list mt-1">
-                  {% for error in form.order.errors %}
-                    <li class="error-item">{{ error }}</li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
+              {{ form.order.errors }}
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 mt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-2" viewBox="0 0 16 16">
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-              </svg>
-              Добавить специалиста
-            </button>
+            <button class="btn btn-primary w-100" type="submit">Добавить специалиста</button>
           </form>
         </div>
       </div>
@@ -564,83 +540,48 @@
 
     <div class="col-lg-7">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="panel-title mb-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
-            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-            <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.75S8.966 7.884 10.333 7.884c1.368 0 2.848.869 3.468 1.815.62.946.792 1.815.792 2.815s-.172.87-.792 1.814C12.676 14.39 11.3 15 10 15c-.326 0-.658-.02-.986-.063-.077-.015-.234-.099-.234-.099l-.08-.045c-.184-.097-.37-.144-.557-.144-.186 0-.372.047-.556.144L7.03 14.1c-.066.035-.181.097-.226.1-.72.19-1.447.3-2.197.3-1.355 0-2.401-.824-2.401-1.824 0-.399.188-.81.438-1.138.294-.39 1.199-.39 1.492 0 .065.087.128.178.189.27C4.859 12.116 5.9 13 7 13c.326 0 .658-.02.986-.063.077-.015.234-.099.234-.099l.08-.045c.184-.097.37-.144.557-.144.186 0 .372.047.556.144l.08.045c.045.001.16.063.226.1.72.19 1.447.3 2.197.3 1.355 0 2.401-.824 2.401-1.824 0-.399-.188-.81-.438-1.138a3.04 3.04 0 0 0-.423-.365 1.555 1.555 0 0 0 .569-.64c.198-.395.356-.81.455-1.244.105-.46.14-1.063.43-1.102.289-.038.415.33.494.48.077.145.204.36.48.512.276.152.59.27.885.228.296-.042.51-.23.635-.478.126-.25.185-.564.132-.85C14.708 4.26 13.64 3.5 12 3.5 10.32 3.5 9 4.584 9 6.118c0 .604.08.998.228 1.356.147.357.377.669.67 1.04.293.37.659.8.856 1.276.197.477.188.999-.054 1.376-.243.376-.67.598-1.12.612v1.272c.51-.042.87-.17 1.138-.344.268-.174.436-.398.534-.634.097-.237.114-.502.078-.786a1.4 1.4 0 0 0-.205-.594c-.13-.207-.322-.38-.514-.517a3.04 3.04 0 0 1-.848-.704c-.018-.019-.043-.027-.064-.01l-.172.14c-.445.382-.91.714-1.39.993a8 8 0 0 1-1.685.799c-.62.222-1.253.332-1.897.332-1.38 0-2.673-.43-3.744-1.19-1.07-.76-1.895-1.792-2.404-3.04a1.005 1.005 0 0 0-.933-.69c-.548 0-1.018.44-1.018 1 0 .85 1.022 1.494 2.415 1.95.532.17 1.11.298 1.71.376.6.078 1.216.117 1.84.117 1.436 0 2.81-.27 4.047-.76.335-.133.654-.27.956-.41.302-.14.588-.283.856-.43.268-.147.518-.297.748-.45.23-.153.44-.308.63-.465.19-.156.36-.313.51-.47.15-.158.28-.317.39-.48.11-.162.2-.325.27-.49.07-.165.12-.33.15-.5.03-.17.05-.34.05-.51 0-.665-.244-1.22-.653-1.665-.41-.446-.965-.668-1.665-.668-.48 0-.89.11-1.23.33-.34.22-.63.56-.85.99l-.39.79c-.07.15-.14.3-.2.46a5.7 5.7 0 0 1-.35.74c-.12.23-.26.46-.41.68-.15.22-.32.43-.5.63-.18.2-.38.39-.59.56-.21.17-.44.32-.68.45a2 2 0 0 1-.77.25c-.27 0-.51-.06-.73-.19a1.4 1.4 0 0 1-.5-.49c-.13-.2-.22-.42-.28-.65-.06-.23-.09-.47-.09-.71 0-.5.18-.93.54-1.29.36-.36.84-.54 1.44-.54.37 0 .69.08.95.24.26.16.48.38.65.66.17.28.3.59.39.93.09.34.13.7.13 1.08z"/>
-          </svg>
-          Список специалистов
-        </h3>
-        <span class="badge badge-primary">
-          {{ specialists|length }} специалист(ов)
-        </span>
+        <h3>Список специалистов</h3>
+        <span class="badge bg-primary">{{ specialists|length }} шт.</span>
       </div>
 
       <div class="specialists-list">
         {% for spec in specialists %}
-          <div class="specialist-card">
-            <div class="avatar-container">
+          <div class="card mb-3 p-3 d-flex flex-row align-items-center">
+            <div style="width:80px; height:80px; margin-right:15px;">
               {% if spec.photo %}
-                <img src="{{ spec.photo.url }}" class="avatar" alt="Фото {{ spec.first_name }} {{ spec.last_name }}">
+                <img src="{{ spec.photo.url }}" alt="" style="width:80px; height:80px; object-fit:cover; border-radius:6px;">
               {% else %}
-                <div class="avatar-initials">
+                <div style="width:80px; height:80px; background:#eee; display:flex; align-items:center; justify-content:center; border-radius:6px;">
                   {{ spec.first_name|slice:":1" }}{% if spec.last_name %}{{ spec.last_name|slice:":1" }}{% endif %}
                 </div>
               {% endif %}
             </div>
 
-            <div class="specialist-info">
-              <div class="specialist-name">{{ spec.first_name }} {{ spec.last_name }}</div>
-              <div class="specialist-position">{{ spec.position }}</div>
-              {% if spec.phone %}
-                <div class="specialist-contact">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-telephone me-2" viewBox="0 0 16 16">
-                    <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.547-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/>
-                  </svg>
-                  {{ spec.phone }}
-                </div>
-              {% endif %}
+            <div class="flex-grow-1">
+              <div style="font-weight:600;">{{ spec.first_name }} {{ spec.last_name }}</div>
+              <div class="text-muted small">{{ spec.position }}</div>
+              <div>
+                {% if spec.services.exists %}
+                  {% for s in spec.services.all %}
+                    <span class="badge bg-secondary me-1">{{ s.service_name }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted small">Услуги не указаны</span>
+                {% endif %}
+              </div>
             </div>
 
-            <div class="specialist-actions">
-              <a href="{% url 'showcase:specialist_edit' pk=spec.id %}" class="btn btn-outline-primary btn-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-1.028-.026a1.5 1.5 0 0 1-1.342-1.342l-.026-1.028L.175 1.308l1.028.026a1.5 1.5 0 0 1 1.342 1.342l.026 1.028 6.5 6.5-.026-1.027a1.5 1.5 0 0 1-1.342-1.342l-.026-1.028-6.5-6.5z"/>
-                </svg>
-                Редактировать
-              </a>
-              <form method="post" action="{% url 'showcase:specialist_delete' pk=spec.id %}" class="d-inline"
-                    onsubmit="return confirm('Вы действительно хотите удалить этого специалиста?');">
+            <div class="d-flex flex-column align-items-end">
+              <a href="{% url 'showcase:specialist_edit' pk=spec.id %}" class="btn btn-sm btn-outline-primary mb-1">Редактировать</a>
+
+              <form method="post" action="{% url 'showcase:specialist_delete' pk=spec.id %}" onsubmit="return confirm('Удалить специалиста?');">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v4a.5.5 0 0 0 1 0V6z"/>
-                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                  </svg>
-                  Удалить
-                </button>
+                <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
               </form>
             </div>
           </div>
         {% empty %}
-          <div class="empty-state">
-            <div class="empty-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.75S8.966 7.884 10.333 7.884c1.368 0 2.848.869 3.468 1.815.62.946.792 1.815.792 2.815s-.172.87-.792 1.814C12.676 14.39 11.3 15 10 15c-.326 0-.658-.02-.986-.063-.077-.015-.234-.099-.234-.099l-.08-.045c-.184-.097-.37-.144-.557-.144-.186 0-.372.047-.556.144L7.03 14.1c-.066.035-.181.097-.226.1-.72.19-1.447.3-2.197.3-1.355 0-2.401-.824-2.401-1.824 0-.399.188-.81.438-1.138.294-.39 1.199-.39 1.492 0 .065.087.128.178.189.27C4.859 12.116 5.9 13 7 13c.326 0 .658-.02.986-.063.077-.015.234-.099.234-.099l.08-.045c.184-.097.37-.144.557-.144.186 0 .372.047.556.144l.08.045c.045.001.16.063.226.1.72.19 1.447.3 2.197.3 1.355 0 2.401-.824 2.401-1.824 0-.399-.188-.81-.438-1.138a3.04 3.04 0 0 0-.423-.365 1.555 1.555 0 0 0 .569-.64c.198-.395.356-.81.455-1.244.105-.46.14-1.063.43-1.102.289-.038.415.33.494.48.077.145.204.36.48.512.276.152.59.27.885.228.296-.042.51-.23.635-.478.126-.25.185-.564.132-.85C14.708 4.26 13.64 3.5 12 3.5 10.32 3.5 9 4.584 9 6.118c0 .604.08.998.228 1.356.147.357.377.669.67 1.04.293.37.659.8.856 1.276.197.477.188.999-.054 1.376-.243.376-.67.598-1.12.612v1.272c.51-.042.87-.17 1.138-.344.268-.174.436-.398.534-.634.097-.237.114-.502.078-.786a1.4 1.4 0 0 0-.205-.594c-.13-.207-.322-.38-.514-.517a3.04 3.04 0 0 1-.848-.704c-.018-.019-.043-.027-.064-.01l-.172.14c-.445.382-.91.714-1.39.993a8 8 0 0 1-1.685.799c-.62.222-1.253.332-1.897.332-1.38 0-2.673-.43-3.744-1.19-1.07-.76-1.895-1.792-2.404-3.04a1.005 1.005 0 0 0-.933-.69c-.548 0-1.018.44-1.018 1 0 .85 1.022 1.494 2.415 1.95.532.17 1.11.298 1.71.376.6.078 1.216.117 1.84.117 1.436 0 2.81-.27 4.047-.76.335-.133.654-.27.956-.41.302-.14.588-.283.856-.43.268-.147.518-.297.748-.45.23-.153.44-.308.63-.465.19-.156.36-.313.51-.47.15-.158.28-.317.39-.48.11-.162.2-.325.27-.49.07-.165.12-.33.15-.5.03-.17.05-.34.05-.51 0-.665-.244-1.22-.653-1.665-.41-.446-.965-.668-1.665-.668-.48 0-.89.11-1.23.33-.34.22-.63.56-.85.99l-.39.79c-.07.15-.14.3-.2.46a5.7 5.7 0 0 1-.35.74c-.12.23-.26.46-.41.68-.15.22-.32.43-.5.63-.18.2-.38.39-.59.56-.21.17-.44.32-.68.45a2 2 0 0 1-.77.25c-.27 0-.51-.06-.73-.19a1.4 1.4 0 0 1-.5-.49c-.13-.2-.22-.42-.28-.65-.06-.23-.09-.47-.09-.71 0-.5.18-.93.54-1.29.36-.36.84-.54 1.44-.54.37 0 .69.08.95.24.26.16.48.38.65.66.17.28.3.59.39.93.09.34.13.7.13 1.08z"/>
-              </svg>
-            </div>
-            <h3 class="empty-title">Список специалистов пуст</h3>
-            <p class="empty-description">Добавьте первого специалиста, чтобы начать работу с системой управления персоналом</p>
-            <button class="btn btn-primary"
-                    onclick="document.querySelector('.panel').scrollIntoView({behavior: 'smooth'})">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus me-2" viewBox="0 0 16 16">
-                <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-              </svg>
-              Добавить первого специалиста
-            </button>
-          </div>
+          <div class="alert alert-info">Список специалистов пуст — добавьте первого специалиста.</div>
         {% endfor %}
       </div>
     </div>

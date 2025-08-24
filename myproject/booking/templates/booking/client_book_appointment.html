@@ -1,27 +1,108 @@
-<!-- booking/templates/booking/client_book_appointment.html -->
 {% extends 'base.html' %}
+{% load dict_extras time_extras %}
+
+{% block title %}Запись к {{ specialist.first_name }} {{ specialist.last_name }}{% endblock %}
 
 {% block content %}
-<h2>Запись к {{ specialist.first_name }} {{ specialist.last_name }}</h2>
-<form method="get">
-    <input type="date" name="date" value="{{ selected_date }}">
-    <button type="submit">Показать доступные времена</button>
-</form>
-{% if availabilities %}
-<form method="post">
-    {% csrf_token %}
-    <select name="availability">
-        {% for avail in availabilities %}
-        <option value="{{ avail.pk }}">{{ avail.start_time }} - {{ avail.end_time }}</option>
-        {% endfor %}
-    </select>
-    {{ form.as_p }}
-    <button type="submit">Записаться</button>
-</form>
-{% else %}
-<p>Нет доступных времен на эту дату.</p>
-{% endif %}
-{% if error %}
-<p>{{ error }}</p>
-{% endif %}
+<div class="container my-4">
+  <h2>Запись к {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+
+  <div class="d-flex gap-2 align-items-center my-3">
+    <form method="get" class="d-flex gap-2 align-items-center">
+      <label class="mb-0">Месяц</label>
+      <input type="month" name="month" value="{{ year }}-{{ month|stringformat:'02d' }}" class="form-control w-auto">
+      <button class="btn btn-secondary" type="submit">Показать</button>
+    </form>
+
+    <form method="get" class="ms-3">
+      <button class="btn btn-outline-primary" type="submit" name="date" value="{{ today }}">Сегодня</button>
+    </form>
+  </div>
+
+  <!-- Календарь -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="card-title mb-0">{{ month_name }} {{ year }}</h5>
+        <div class="small text-muted">Кликните на день, чтобы увидеть свободные слоты</div>
+      </div>
+
+      <table class="table table-bordered calendar-table mb-0">
+        <thead>
+          <tr>
+            {% for wd in weekdays %}
+              <th class="text-center small">{{ wd }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for week in month_days_matrix %}
+            <tr>
+              {% for day in week %}
+                {% if day == 0 %}
+                  <td class="calendar-empty" style="height:80px;"></td>
+                {% else %}
+                  {% with count=day_counts|get_item:day %}
+                    {% if count and count|default:0 > 0 %}
+                      <td class="align-top p-2">
+                        <a href="?date={{ year }}-{{ month|stringformat:'02d' }}-{{ day|stringformat:'02d' }}&month={{ year }}-{{ month|stringformat:'02d' }}" class="d-block text-decoration-none">
+                          <strong>{{ day }}</strong>
+                          <div class="small text-success">{{ count }} свободно</div>
+                        </a>
+                      </td>
+                    {% else %}
+                      <td class="align-top p-2 text-muted"><span>{{ day }}</span></td>
+                    {% endif %}
+                  {% endwith %}
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Слоты выбранной даты -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Свободные слоты на {{ selected_date }}</h5>
+
+      {% if availabilities %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="list-group mb-3">
+            {% for avail in availabilities %}
+              <label class="list-group-item d-flex justify-content-between align-items-center">
+                <input type="radio" name="availability" value="{{ avail.pk }}" required>
+                <div>
+                  <div><strong>{{ avail.start_time|format_time }} - {{ avail.end_time|format_time }}</strong></div>
+                  {% if avail.service %}
+                    <div class="small text-muted">
+                      {% if avail.service.activity_area %}{{ avail.service.activity_area.get_category_display }}: {% endif %}
+                      {{ avail.service.service_name }}
+                    </div>
+                  {% endif %}
+                </div>
+              </label>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.notes.label_tag }}
+            {{ form.notes }}
+          </div>
+
+          <button type="submit" class="btn btn-primary">Записаться</button>
+        </form>
+      {% else %}
+        <div class="alert alert-info">Нет доступных слотов на выбранную дату.</div>
+      {% endif %}
+
+      {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

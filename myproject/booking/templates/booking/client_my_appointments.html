@@ -1,17 +1,45 @@
-<!-- booking/templates/booking/client_my_appointments.html -->
 {% extends 'base.html' %}
 
+{% block title %}Мои записи{% endblock %}
+
 {% block content %}
-<h2>Мои записи</h2>
-<ul>
-    {% for appointment in appointments %}
-    <li>
-        {{ appointment.specialist }} - {{ appointment.availability.date }} {{ appointment.availability.start_time }}
-        ({{ appointment.status }})
-        {% if appointment.status != 'cancelled' and appointment.availability.date >= today %}
-        <a href="{% url 'booking:client_cancel_appointment' pk=appointment.pk %}">Отменить</a>
-        {% endif %}
-    </li>
-    {% endfor %}
-</ul>
+<div class="container my-4">
+  <h2>Мои записи</h2>
+
+  {% if appointments %}
+    <ul class="list-group">
+      {% for appointment in appointments %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div>
+            <div><strong>Специалист:</strong> {{ appointment.specialist }}</div>
+            <div><strong>Дата:</strong> {{ appointment.availability.date }} {{ appointment.availability.start_time }}–{{ appointment.availability.end_time }}</div>
+            {% if appointment.service %}
+              <div><strong>Услуга:</strong>
+                {% if appointment.service.activity_area %}
+                  {{ appointment.service.activity_area.get_category_display }} —
+                {% endif %}
+                {{ appointment.service.service_name }}
+              </div>
+            {% endif %}
+            <div><strong>Статус:</strong> {{ appointment.get_status_display }}</div>
+            {% if appointment.notes %}
+              <div><strong>Заметки:</strong> {{ appointment.notes }}</div>
+            {% endif %}
+          </div>
+
+          <div class="text-end">
+            {% if appointment.status != 'cancelled' and appointment.availability.date >= today %}
+              <a class="btn btn-sm btn-danger" href="{% url 'booking:client_cancel_appointment' pk=appointment.pk %}"
+                 onclick="return confirm('Вы уверены, что хотите отменить запись?');">Отменить</a>
+            {% else %}
+              <span class="text-muted small">Нельзя отменить</span>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-info">У вас пока нет записей.</div>
+  {% endif %}
+</div>
 {% endblock %}

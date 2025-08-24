@@ -1,28 +1,43 @@
-# booking/forms.py
 from django import forms
+from django.core.exceptions import ValidationError
 from .models import Availability, Appointment
 from accounts.models import ServicePrice
-from datetime import date, timedelta
-from django.core.exceptions import ValidationError
-import calendar
+from datetime import date as _date
+from django.forms import modelformset_factory
+
 
 class AvailabilityForm(forms.ModelForm):
     class Meta:
         model = Availability
-        fields = ['date', 'start_time', 'end_time']
+        fields = ['date', 'start_time', 'end_time', 'service']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'service': forms.Select(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        # Можно передать workshop или specialist, чтобы отфильтровать услуги
+        workshop = kwargs.pop('workshop', None)
+        specialist = kwargs.pop('specialist', None)
+        super().__init__(*args, **kwargs)
+        self.fields['service'].queryset = ServicePrice.objects.none()
+        if workshop:
+            self.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)
+        elif specialist:
+            try:
+                self.fields['service'].queryset = ServicePrice.objects.filter(workshop=specialist.showcase.workshop)
+            except Exception:
+                self.fields['service'].queryset = ServicePrice.objects.none()
 
     def clean(self):
         cleaned_data = super().clean()
         start_time = cleaned_data.get('start_time')
         end_time = cleaned_data.get('end_time')
-        date = cleaned_data.get('date')
+        date_field = cleaned_data.get('date')
 
-        if date and date < date.today():
+        if date_field and date_field < _date.today():
             raise ValidationError('Дата не может быть в прошлом.')
 
         if start_time and end_time and start_time >= end_time:
@@ -30,25 +45,24 @@ class AvailabilityForm(forms.ModelForm):
 
         return cleaned_data
 
-AvailabilityFormSet = forms.modelformset_factory(
+
+AvailabilityFormSet = modelformset_factory(
     Availability,
     form=AvailabilityForm,
     extra=1,
     can_delete=True
 )
 
+
 class AppointmentForm(forms.ModelForm):
     class Meta:
         model = Appointment
-        fields = ['service', 'notes']
+        # убираем service — услуга берётся из Availability (чтобы не было рассинхрона)
+        fields = ['notes']
         widgets = {
-            'service': forms.Select(attrs={'class': 'form-control'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
-        specialist = kwargs.pop('specialist', None)
+        # если нужно, можно принимать specialist или availability для валидаций
         super().__init__(*args, **kwargs)
-        if specialist:
-            workshop = specialist.showcase.workshop
-            self.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)

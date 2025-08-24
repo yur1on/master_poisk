@@ -1,18 +1,64 @@
-<!-- booking/templates/booking/owner_appointments_list.html -->
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load time_extras %}
+
+{% block title %}Записи — {{ specialist.first_name }}{% endblock %}
 
 {% block content %}
-<h2>Записи для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
-<ul>
+<div class="container my-4">
+  <h2>Записи для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+
+  <ul class="list-group">
     {% for appointment in appointments %}
-    <li>
-        {{ appointment.client }} - {{ appointment.availability.date }} {{ appointment.availability.start_time }}
-        ({{ appointment.status }})
-        {% if appointment.status == 'pending' %}
-        <a href="{% url 'booking:owner_confirm_appointment' pk=appointment.pk %}">Подтвердить</a>
-        {% endif %}
-        <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}">Отменить</a>
-    </li>
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div>
+          {# Клиент: сначала имя из профиля, иначе имя пользователя/полное имя #}
+          <div class="fw-bold">
+            {% if appointment.client.name %}
+              {{ appointment.client.name }}
+            {% else %}
+              {% if appointment.client.user.get_full_name %}
+                {{ appointment.client.user.get_full_name }}
+              {% else %}
+                {{ appointment.client.user.username }}
+              {% endif %}
+            {% endif %}
+          </div>
+
+          {# Телефон и город (если есть) #}
+          <div class="small text-muted">
+            {% if appointment.client.phone %}Телефон: {{ appointment.client.phone }}{% endif %}
+            {% if appointment.client.city %}<span class="ms-2">Город: {{ appointment.client.city }}</span>{% endif %}
+          </div>
+
+          {# Дата и время (время через format_time) #}
+          <div class="mt-2">
+            <strong>{{ appointment.availability.date|date:"d.m.Y" }}</strong>
+            —
+            <span>{{ appointment.availability.start_time|format_time }} - {{ appointment.availability.end_time|format_time }}</span>
+          </div>
+
+          {# Услуга и статус #}
+          <div class="mt-1">
+            {% if appointment.service %}
+              <div>Услуга: {{ appointment.service.service_name }}</div>
+            {% endif %}
+            <div>Статус: {{ appointment.get_status_display }}</div>
+            {% if appointment.notes %}
+              <div class="mt-1"><em>Заметки:</em> {{ appointment.notes }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-flex flex-column">
+          {% if appointment.status == 'pending' %}
+            <a href="{% url 'booking:owner_confirm_appointment' pk=appointment.pk %}" class="btn btn-sm btn-success mb-1">Подтвердить</a>
+          {% endif %}
+          <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}" class="btn btn-sm btn-danger">Отменить</a>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item">Нет записей.</li>
     {% endfor %}
-</ul>
+  </ul>
+</div>
 {% endblock %}
