@@ -39,14 +39,38 @@ from datetime import date, timedelta
 import calendar
 from django.utils.dateparse import parse_date
 
+# booking/views.py (обновлённый owner_schedule_manage с проверкой пересечений)
+from datetime import date, timedelta
+import calendar
+import logging
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_date
+from django.contrib import messages
+from django.db.models import Q
+
+from .models import Availability, Appointment
+from .forms import AvailabilityFormSet
+from accounts.models import WorkshopProfile, ServicePrice
+from showcase.models import Specialist
+
+logger = logging.getLogger(__name__)
+
+# helper
+def times_overlap(start1, end1, start2, end2):
+    """
+    True если интервалы (start1,end1) и (start2,end2) пересекаются.
+    Ожидаем объекты datetime.time (или совместимые для сравнения).
+    Пересечение определяем как: start1 < end2 and start2 < end1
+    """
+    return (start1 < end2) and (start2 < end1)
+
+
 @login_required
 def owner_schedule_manage(request, pk):
     """
-    Управление расписанием для специалиста (owner).
-    Показывает:
-      - formset для редактирования/добавления таймслотов,
-      - компактный календарь месяца с пометками дней, где есть слоты,
-      - список слотов за месяц и отдельно слоты на выбранную дату (если ?date=YYYY-MM-DD).
+    Управление расписанием: formset + календарь + проверка перекрытий.
     """
     specialist = get_object_or_404(Specialist, pk=pk)
     if specialist.showcase.workshop.user != request.user:
@@ -65,7 +89,7 @@ def owner_schedule_manage(request, pk):
     else:
         year, month = date.today().year, date.today().month
 
-    # selected_date (опционально) — если передали ?date=YYYY-MM-DD
+    # selected_date (опционально)
     date_str = request.GET.get('date')
     selected_date = parse_date(date_str) if date_str else None
 
@@ -73,58 +97,170 @@ def owner_schedule_manage(request, pk):
     first_day = date(year, month, 1)
     last_day = first_day + timedelta(days=calendar.monthrange(year, month)[1] - 1)
 
-    # Availabilities за месяц (владелец должен видеть все — включая уже записанные)
+    # Availabilities за месяц (владелец видит все)
     avail_month_qs = Availability.objects.filter(
         specialist=specialist,
         date__range=(first_day, last_day)
     ).order_by('date', 'start_time')
 
-    # Матрица календаря (список недель; 0 — пустая ячейка)
-    cal = calendar.Calendar(firstweekday=0)  # понедельник = 0
+    # calendar matrix
+    cal = calendar.Calendar(firstweekday=0)
     month_days_matrix = list(cal.monthdayscalendar(year, month))
-    month_name = calendar.month_name[month]  # можно заменить на русский, если хотите
+    month_name = calendar.month_name[month]
 
-    # Собираем слоты по дням (для пометок в календаре)
+    # slots_by_day/counts
     slots_by_day = {}
     for a in avail_month_qs:
         slots_by_day.setdefault(a.date.day, []).append(a)
     month_days_count = calendar.monthrange(year, month)[1]
     day_counts = {d: len(slots_by_day.get(d, [])) for d in range(1, month_days_count + 1)}
 
-    # Слоты на выбранную дату (если selected_date задана) — иначе None / пустой список
+    # availabilities for selected date (to show under calendar)
     if selected_date:
         availabilities_day = avail_month_qs.filter(date=selected_date).order_by('start_time')
     else:
         availabilities_day = []
 
-    # Формсет и POST-логика (как было), но с ограничением queryset услуг на workshop
+    # FORMSET handling
     if request.method == 'POST':
         formset = AvailabilityFormSet(request.POST, queryset=avail_month_qs)
+        # ограничим сервисы этой студии
         for f in formset.forms:
-            f.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)
+            try:
+                f.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)
+            except Exception:
+                pass
 
         if formset.is_valid():
+            # получаем формы, помеченные на удаление — их pk нужно исключить при проверке перекрытий
+            deleted_forms = getattr(formset, 'deleted_forms', [])
+            deleted_pks = [f.instance.pk for f in deleted_forms if getattr(f.instance, 'pk', None)]
+
+            # подготовим быстрый доступ к существующим интервалам в БД по дате
+            # dict: date -> list of (start_time, end_time, pk)
+            db_intervals_by_date = {}
+            # берем авалы за те даты, которые упоминаются в formset, чтобы не делать много запросов
+            dates_in_forms = set()
+            for f in formset.forms:
+                cd = f.cleaned_data if hasattr(f, 'cleaned_data') else {}
+                if not cd:
+                    continue
+                if cd.get('DELETE'):
+                    continue
+                d = cd.get('date')
+                if d:
+                    dates_in_forms.add(d)
+
+            if dates_in_forms:
+                q = Q(specialist=specialist, date__in=list(dates_in_forms))
+                # исключаем те, которые помечены для удаления
+                if deleted_pks:
+                    q &= ~Q(pk__in=deleted_pks)
+                existing = Availability.objects.filter(q).order_by('date', 'start_time')
+                for a in existing:
+                    db_intervals_by_date.setdefault(a.date, []).append((a.start_time, a.end_time, a.pk))
+
+            # соберём новые интервалы из formset (для проверки пересечений между формами)
+            new_intervals_by_date = {}  # date -> list of (start, end, form_index)
+            has_errors = False
+
+            # Проверяем каждую форму
+            for idx, form in enumerate(formset.forms):
+                cd = form.cleaned_data if hasattr(form, 'cleaned_data') else {}
+                # игнорируем формы помеченные на удаление
+                if not cd or cd.get('DELETE'):
+                    continue
+
+                d = cd.get('date')
+                st = cd.get('start_time')
+                et = cd.get('end_time')
+
+                # базовые проверки
+                if not d or not st or not et:
+                    # если каких-то полей нет — добавляем ошибку
+                    form.add_error(None, "Дата, время начала и конца обязательны.")
+                    has_errors = True
+                    continue
+
+                if not (st < et):
+                    form.add_error('start_time', "Время начала должно быть раньше времени окончания.")
+                    form.add_error('end_time', "Время окончания должно быть позже времени начала.")
+                    has_errors = True
+                    continue
+
+                # 1) проверка с существующими интервальными в БД на ту же дату
+                db_intervals = db_intervals_by_date.get(d, [])
+                for db_st, db_et, db_pk in db_intervals:
+                    # если форма редактирует ту же запись (instance.pk), то пропускаем сравнение с самим собой
+                    inst_pk = getattr(form.instance, 'pk', None)
+                    if inst_pk and db_pk == inst_pk:
+                        continue
+                    if times_overlap(st, et, db_st, db_et):
+                        form.add_error('start_time', f"Пересекается с существующим слотом {db_st.strftime('%H:%M')}–{db_et.strftime('%H:%M')}.")
+                        form.add_error('end_time', f"Пересекается с существующим слотом {db_st.strftime('%H:%M')}–{db_et.strftime('%H:%M')}.")
+                        has_errors = True
+                        break
+                if has_errors:
+                    # не продолжаем дополнительные проверки для этой формы
+                    continue
+
+                # 2) проверка между формами в этом formset (чтобы не добавить два пересекающихся новых/изменённых слота)
+                li = new_intervals_by_date.setdefault(d, [])
+                # сравниваем со всеми уже добавленными в li
+                for other_st, other_et, other_idx in li:
+                    if times_overlap(st, et, other_st, other_et):
+                        # добавляем ошибку и обеим формам (если хотим — только текущей)
+                        form.add_error('start_time', "Пересекается с другим слотом, указанным в этой форме.")
+                        form.add_error('end_time', "Пересекается с другим слотом, указанным в этой форме.")
+                        # пометим ошибку и у формы-источника (other_idx)
+                        other_form = formset.forms[other_idx]
+                        other_form.add_error('start_time', "Пересекается с другим слотом, указанным в этой форме.")
+                        other_form.add_error('end_time', "Пересекается с другим слотом, указанным в этой форме.")
+                        has_errors = True
+                        break
+
+                # если ошибок нет — добавляем текущую форму в список новых
+                li.append((st, et, idx))
+
+            if has_errors:
+                # есть ошибки — рендерим страницу с formset (ошибки уже добавлены)
+                messages.error(request, "Найдены пересечения слотов — исправьте, пожалуйста.")
+                context = {
+                    'specialist': specialist,
+                    'formset': formset,
+                    'month': f'{year}-{month:02d}',
+                    'availabilities': avail_month_qs,
+                    'month_days_matrix': month_days_matrix,
+                    'day_counts': day_counts,
+                    'month_name': month_name,
+                    'year': year,
+                    'month_num': month,
+                    'selected_date': selected_date,
+                    'availabilities_day': availabilities_day,
+                    'weekdays': ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+                }
+                return render(request, 'booking/owner_schedule_manage.html', context)
+
+            # если ошибок не найдено — сохраняем (как раньше)
             instances = formset.save(commit=False)
-            has_error = False
-            for idx, instance in enumerate(instances):
+            for instance in instances:
                 instance.specialist = specialist
-                if instance.service and instance.service.workshop != workshop:
-                    formset.forms[idx].add_error('service', 'Выбранная услуга не принадлежит этой студии.')
-                    has_error = True
-            if has_error:
-                messages.error(request, "Исправьте ошибки в форме.")
-            else:
-                for instance in instances:
-                    instance.save()
-                for instance in formset.deleted_objects:
-                    instance.delete()
-                messages.success(request, "Расписание сохранено.")
-                # перенаправляем на тот же месяц, чтобы избежать повторной отправки формы
-                return redirect(f'{request.path}?month={year}-{month:02d}')
+                instance.save()
+            # удаляем отмеченные
+            for instance in formset.deleted_objects:
+                instance.delete()
+            messages.success(request, "Расписание сохранено.")
+            return redirect('booking:owner_schedule_manage', pk=pk)
+        else:
+            # formset невалиден — покажем ошибки
+            messages.error(request, "Есть ошибки в заполненных формах. Исправьте их.")
     else:
         formset = AvailabilityFormSet(queryset=avail_month_qs)
         for f in formset.forms:
-            f.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)
+            try:
+                f.fields['service'].queryset = ServicePrice.objects.filter(workshop=workshop)
+            except Exception:
+                pass
 
     context = {
         'specialist': specialist,

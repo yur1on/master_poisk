@@ -12,7 +12,10 @@
         <li class="list-group-item d-flex justify-content-between align-items-start">
           <div>
             <div><strong>Специалист:</strong> {{ appointment.specialist }}</div>
-            <div><strong>Дата:</strong> {{ appointment.availability.date }} {{ appointment.availability.start_time }}–{{ appointment.availability.end_time }}</div>
+            <div>
+              <strong>Дата:</strong> {{ appointment.availability.date }}
+              {{ appointment.availability.start_time|date:"H:i" }} – {{ appointment.availability.end_time|date:"H:i" }}
+            </div>
             {% if appointment.service %}
               <div><strong>Услуга:</strong>
                 {% if appointment.service.activity_area %}
