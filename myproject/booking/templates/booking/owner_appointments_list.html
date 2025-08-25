@@ -5,60 +5,83 @@
 
 {% block content %}
 <div class="container my-4">
-  <h2>Записи для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
+  <h2 class="mb-4">Записи для {{ specialist.first_name }} {{ specialist.last_name }}</h2>
 
-  <ul class="list-group">
-    {% for appointment in appointments %}
-      <li class="list-group-item d-flex justify-content-between align-items-start">
-        <div>
-          {# Клиент: сначала имя из профиля, иначе имя пользователя/полное имя #}
-          <div class="fw-bold">
-            {% if appointment.client.name %}
-              {{ appointment.client.name }}
-            {% else %}
-              {% if appointment.client.user.get_full_name %}
-                {{ appointment.client.user.get_full_name }}
-              {% else %}
-                {{ appointment.client.user.username }}
+  {% regroup appointments by availability.date as date_groups %}
+
+  {% for group in date_groups %}
+    <div class="mb-4">
+      <h5 class="mb-2">{{ group.grouper|date:"d.m.Y" }}</h5>
+      <ul class="list-group">
+        {% for appointment in group.list %}
+          <li class="list-group-item d-flex justify-content-between align-items-start flex-wrap">
+            <div>
+              <!-- Имя клиента -->
+              <div class="fw-bold">
+                {% if appointment.client.name %}
+                  {{ appointment.client.name }}
+                {% elif appointment.client.user.get_full_name %}
+                  {{ appointment.client.user.get_full_name }}
+                {% else %}
+                  {{ appointment.client.user.username }}
+                {% endif %}
+              </div>
+              <!-- Телефон / город -->
+              <div class="small text-muted">
+                {% if appointment.client.phone %}Телефон: {{ appointment.client.phone }}{% endif %}
+                {% if appointment.client.city %}<span class="ms-2">Город: {{ appointment.client.city }}</span>{% endif %}
+              </div>
+              <!-- Время слота -->
+              <div class="mt-2">
+                <span class="fw-semibold">{{ appointment.availability.start_time|format_time }} – {{ appointment.availability.end_time|format_time }}</span>
+              </div>
+              <!-- Услуга -->
+              {% if appointment.service %}
+                <div class="mt-1">Услуга: {{ appointment.service.service_name }}</div>
               {% endif %}
-            {% endif %}
-          </div>
+              <!-- Статус с цветным бейджем -->
+              <div class="mt-1">
+                {% if appointment.status == 'pending' %}
+                  <span class="badge bg-warning text-dark">Ожидает подтверждения</span>
+                {% elif appointment.status == 'confirmed' %}
+                  <span class="badge bg-success">Подтверждено</span>
+                {% else %}
+                  <span class="badge bg-secondary">Отменено</span>
+                {% endif %}
+              </div>
+              <!-- Заметки -->
+              {% if appointment.notes %}
+                <div class="mt-1"><em>Заметки:</em> {{ appointment.notes }}</div>
+              {% endif %}
+            </div>
 
-          {# Телефон и город (если есть) #}
-          <div class="small text-muted">
-            {% if appointment.client.phone %}Телефон: {{ appointment.client.phone }}{% endif %}
-            {% if appointment.client.city %}<span class="ms-2">Город: {{ appointment.client.city }}</span>{% endif %}
-          </div>
-
-          {# Дата и время (время через format_time) #}
-          <div class="mt-2">
-            <strong>{{ appointment.availability.date|date:"d.m.Y" }}</strong>
-            —
-            <span>{{ appointment.availability.start_time|format_time }} - {{ appointment.availability.end_time|format_time }}</span>
-          </div>
-
-          {# Услуга и статус #}
-          <div class="mt-1">
-            {% if appointment.service %}
-              <div>Услуга: {{ appointment.service.service_name }}</div>
-            {% endif %}
-            <div>Статус: {{ appointment.get_status_display }}</div>
-            {% if appointment.notes %}
-              <div class="mt-1"><em>Заметки:</em> {{ appointment.notes }}</div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="d-flex flex-column">
-          {% if appointment.status == 'pending' %}
-            <a href="{% url 'booking:owner_confirm_appointment' pk=appointment.pk %}" class="btn btn-sm btn-success mb-1">Подтвердить</a>
-          {% endif %}
-          <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}" class="btn btn-sm btn-danger">Отменить</a>
-        </div>
-      </li>
-    {% empty %}
-      <li class="list-group-item">Нет записей.</li>
-    {% endfor %}
-  </ul>
+            <!-- Кнопки действий -->
+            <div class="d-flex flex-column align-items-end mt-2 mt-sm-0 ms-sm-4">
+              {% if appointment.status == 'pending' %}
+                <a href="{% url 'booking:owner_confirm_appointment' pk=appointment.pk %}" class="btn btn-sm btn-success mb-1">
+                  Подтвердить
+                </a>
+                <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}" class="btn btn-sm btn-danger">
+                  Отменить
+                </a>
+              {% elif appointment.status == 'confirmed' %}
+                <a href="{% url 'booking:owner_cancel_appointment' pk=appointment.pk %}" class="btn btn-sm btn-danger">
+                  Отменить
+                </a>
+              {% else %}
+                <a href="{% url 'booking:owner_delete_appointment' pk=appointment.pk %}"
+                   class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Удалить эту запись?');">
+                  Удалить
+                </a>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% empty %}
+    <div class="alert alert-info">Нет записей.</div>
+  {% endfor %}
 </div>
 {% endblock %}
